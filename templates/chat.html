@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Mis chats</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}"
+    />
+  </head>
+  <body>
+    <div id="container">
+      <div id="menu">
+        <div id="button-col">
+          <button onclick="closeMenu();"><i class="fas fa-message"></i></button>
+          <button onclick="closeMenu()"><i class="fas fa-users"></i></button>
+          <button onclick="closeMenu(); showCommands()">
+            <i class="fa-solid fa-book"></i>
+          </button>
+          <button onclick="closeAndToggle()">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+        <img alt="mi_perfil" id="side_img" title="Mi perfil" />
+      </div>
+      <!-- Columna de usuarios -->
+      <div id="usuarios">
+        <div id="usuarios_header">
+          <h3>Mensajes</h3>
+          <div class="input-container-search">
+            <i class="fas fa-search"></i>
+            <input type="search" placeholder="Buscar contacto" />
+          </div>
+        </div>
+        <ul id="lista-usuarios">
+          <!-- <li class="user-item active">
+            <img
+              src="https://avatar.iran.liara.run/username?username=Scott+Wilson"
+              alt="ScottWilson"
+            />
+            <div class="user-item-data">
+              <div class="user-item-div">
+                <h5 class="user-item-name">Nombre de usuario largo</h5>
+                <p class="user-item-time">11:11 pm</p>
+              </div>
+              <div class="user-item-div">
+                <h6 class="user-item-mensaje">
+                  Mensaje todo largo para ver que pdo
+                </h6>
+                <span class="user-item-span">1</span>
+              </div>
+            </div>
+          </li> -->
+
+          <div class="lord_container_users">
+            <lord-icon
+              src="https://cdn.lordicon.com/fozsorqm.json"
+              trigger="hover"
+              style="width: 10rem; height: 10rem"
+            >
+            </lord-icon>
+            <h5>Inicia un canal en grupo o uno a uno con tus amigos</h5>
+          </div>
+        </ul>
+      </div>
+
+      <!-- Columna de chat -->
+      <div id="chat-container">
+        <header class="the_nav" id="the_nav">
+          <!-- <i class="fas fa-comments"></i> Chat Seguro (AES-256 + HMAC) -->
+          <button
+            class="toggle-button"
+            onclick="document.body.classList.add('show')"
+          >
+            <i class="fas fa-bars"></i>
+          </button>
+          <img
+            src="https://avatar.iran.liara.run/username?username=Canal+General"
+            alt="ScottWilson"
+            class="img_contact"
+            id="img_contact"
+          />
+          <p id="chat_name">General</p>
+        </header>
+        <div id="chat">
+          <div class="lord_icon_chat">
+            <lord-icon
+              src="https://cdn.lordicon.com/jdgfsfzr.json"
+              trigger="loop"
+              state="hover-conversation-alt"
+              style="width: 250px; height: 250px"
+            >
+            </lord-icon>
+            <h2>¡Bienvenido!</h2>
+            <h4>
+              Desde aquí puedes unirte a cualquier canal o buscar a tus amigos
+            </h4>
+          </div>
+        </div>
+        <div id="input-container">
+          <textarea
+            id="mensaje"
+            placeholder="Escribe un mensaje cifrado..."
+            rows="1"
+          ></textarea>
+          <button id="send">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="28"
+              height="28"
+              fill="currentColor"
+            >
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <!-- <script>
+    async function getUser() {
+      const id = await sessionStorage.getItem("user_id");
+      console.log(id);
+      try {
+        const res = await fetch(`/perfil/${id}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+        if (!res.ok) return alert(data.error);
+
+        alert("Datos obtenidos: " + JSON.stringify(data));
+      } catch (err) {
+        alert("Error en obtener datos: " + err);
+      }
+    }
+    getUser();
+    //(params) => {};
+  </script> -->
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</html>

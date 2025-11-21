@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login y Registro Chat</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #f4f4f4;
+      }
+      #container {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #212e8e;
+        color: #fff;
+        cursor: pointer;
+        width: 100%;
+      }
+      #btn-login {
+        margin-bottom: 10px; 
+      }
+  
+      #btn-google {
+        margin-top: 10px; 
+      }
+      h2 {
+        text-align: center;
+      }
+      .switch {
+        font-size: 0.9rem;
+        text-align: center;
+        margin-top: 1rem;
+        cursor: pointer;
+        color: #212e8e;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h2 id="title">Login</h2>
+
+      <div id="form-login">
+        <input type="email" id="login-email" placeholder="Correo" />
+        <input type="password" id="login-password" placeholder="Contraseña" />
+        <button id="btn-login">Entrar</button>
+        <button id="btn-google">Ingresar con google</button>
+        <a href="/login_google">Por Google</a>
+        <div class="switch" id="to-register">¿No tienes cuenta? Regístrate</div>
+      </div>
+
+      <div id="form-register" style="display: none">
+        <input type="text" id="reg-nombre" placeholder="Nombre de usuario" />
+        <input type="text" id="reg-apellido" placeholder="Nombre de usuario" />
+        <input type="email" id="reg-email" placeholder="Correo" />
+        <input type="password" id="reg-password" placeholder="Contraseña" />
+        <button id="btn-register">Registrarse</button>
+        <div class="switch" id="to-login">¿Ya tienes cuenta? Inicia sesión</div>
+      </div>
+    </div>
+
+    <script>
+      const loginForm = document.getElementById("form-login");
+      const regForm = document.getElementById("form-register");
+      const title = document.getElementById("title");
+
+      // Cambiar de login a registro
+      document.getElementById("to-register").addEventListener("click", () => {
+        loginForm.style.display = "none";
+        regForm.style.display = "block";
+        title.innerText = "Registro";
+      });
+
+      document.getElementById("to-login").addEventListener("click", () => {
+        loginForm.style.display = "block";
+        regForm.style.display = "none";
+        title.innerText = "Login";
+      });
+
+      // POST /register
+      document
+        .getElementById("btn-register")
+        .addEventListener("click", async () => {
+          const nombre = document.getElementById("reg-nombre").value.trim();
+          const apellido = document.getElementById("reg-apellido").value.trim();
+          const email = document.getElementById("reg-email").value.trim();
+          const password = document.getElementById("reg-password").value;
+
+          if (!nombre || !email || !password || !apellido)
+            return alert("Completa todos los campos");
+
+          try {
+            const res = await fetch("/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ nombre, apellido, email, password }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) return alert(data.error);
+
+            console.log(data);
+
+            alert("Registro exitoso! ID: " + data.user_id);
+            // Guardar localmente
+            sessionStorage.setItem("user_id", data.user_id);
+            window.location.href = "/chat";
+            window.history.replaceState({}, "", "/chat");
+          } catch (err) {
+            alert("Error en el registro: " + err);
+          }
+        });
+
+      // POST /login
+      document
+        .getElementById("btn-login")
+        .addEventListener("click", async () => {
+          const email = document.getElementById("login-email").value.trim();
+          const password = document.getElementById("login-password").value;
+
+          if (!email || !password) return alert("Completa todos los campos");
+
+          try {
+            const res = await fetch("/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+            const data = await res.json();
+            if (!res.ok) return alert(data.error);
+
+            alert("Login exitoso! ID: " + data.user_id);
+            sessionStorage.setItem("user_id", data.user_id);
+            sessionStorage.setItem("nombre", data.nombre);
+            window.location.href = "/chat";
+          } catch (err) {
+            alert("Error en login: " + err);
+          }
+        });
+
+      //Ir a Google
+      document.getElementById("btn-login").addEventListener("click", () => {
+        window.location.href = "/login_google";
+      });
+    </script>
+  </body>
+</html>
