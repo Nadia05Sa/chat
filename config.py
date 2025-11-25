@@ -1,44 +1,81 @@
-from authlib.integrations.flask_client import OAuth
+# config.py
 import os
-from dotenv import load_dotenv
+import base64
 from authlib.integrations.flask_client import OAuth
+from dotenv import load_dotenv
 
-oauth = OAuth()
-
-IP_SERVIDOR = "0.0.0.0"
-PUERTO = 5001
-
-AES_KEY = bytes([
-    49,50,51,52,53,54,55,56,57,48,49,50,51,52,53,54,
-    55,56,57,48,49,50,51,52,53,54,55,56,57,48,49,50
-])
-
-CLAVE_SECRETA = b"clave_super_secreta"
-
-MONGO_URI = "mongodb://localhost:27017/"
-DB_NAME = "chat_cybersecurity"
-
-ENABLE_DB = True
-
-AUDIT_LOG_FILE = "audit_log.txt"
-ENABLE_AUDIT = True
-
-AES_SECRET_KEY = b"1234567890ABCDEF1234567890ABCDEF"   # 32 bytes
-AES_IV = b"ABCDEF1234567890"                           # 16 bytes
-
-
+# Cargar variables de ambiente
 load_dotenv()
 
 oauth = OAuth()
 
-IP_SERVIDOR = os.getenv("IP_SERVIDOR", "0.0.0.0")
-PUERTO = int(os.getenv("PUERTO", 5001))
+# ----------------------------------
+# Configuración del servidor WebSocket
+# ----------------------------------
+IP_SERVIDOR = os.environ.get("WS_HOST", "0.0.0.0")
+PUERTO = int(os.environ.get("WS_PORT", 5001))
 
-AES_KEY = bytes(eval(os.getenv("AES_KEY", "[]")))
-CLAVE_SECRETA = os.getenv("CLAVE_SECRETA", "secreto").encode()
+# ----------------------------------
+# Claves de encriptación
+# ----------------------------------
+def _get_aes_key():
+    """
+    Obtiene la clave AES de las variables de ambiente.
+    La clave debe estar codificada en base64.
+    """
+    key_base64 = os.environ.get("AES_KEY_BASE64")
+    if not key_base64:
+        raise ValueError(
+            "❌ ERROR: AES_KEY_BASE64 no está configurada en las variables de ambiente.\n"
+            "Genera una clave con: python -c \"import secrets, base64; print(base64.b64encode(secrets.token_bytes(32)).decode())\""
+        )
+    
+    key_bytes = base64.b64decode(key_base64)
+    if len(key_bytes) != 32:
+        raise ValueError(f"❌ ERROR: AES_KEY debe ser de 32 bytes, se recibieron {len(key_bytes)} bytes")
+    
+    return key_bytes
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-DB_NAME = os.getenv("DB_NAME", "chat_cybersecurity")
+def _get_hmac_key():
+    """
+    Obtiene la clave HMAC de las variables de ambiente.
+    """
+    key = os.environ.get("HMAC_SECRET_KEY")
+    if not key:
+        raise ValueError(
+            "❌ ERROR: HMAC_SECRET_KEY no está configurada en las variables de ambiente."
+        )
+    return key.encode('utf-8')
 
-AUDIT_LOG_FILE = os.getenv("AUDIT_LOG_FILE", "audit_log.txt")
-ENABLE_AUDIT = os.getenv("ENABLE_AUDIT", "true") == "true"
+# Cargar claves (se validarán al importar el módulo)
+AES_KEY = _get_aes_key()
+CLAVE_SECRETA = _get_hmac_key()
+
+# ----------------------------------
+# Configuración de MongoDB
+# ----------------------------------
+MONGO_URI = os.environ.get("MONGO_URI")
+if not MONGO_URI:
+    raise ValueError("❌ ERROR: MONGO_URI no está configurada en las variables de ambiente.")
+
+DB_NAME = os.environ.get("DB_NAME", "chat-cybersecurity")
+ENABLE_DB = os.environ.get("ENABLE_DB", "true").lower() == "true"
+
+# ----------------------------------
+# Configuración de Auditoría
+# ----------------------------------
+AUDIT_LOG_FILE = os.environ.get("AUDIT_LOG_FILE", "audit_log.txt")
+ENABLE_AUDIT = os.environ.get("ENABLE_AUDIT", "true").lower() == "true"
+
+# ----------------------------------
+# Configuración SSL/TLS
+# ----------------------------------
+SSL_ENABLED = os.environ.get("SSL_ENABLED", "false").lower() == "true"
+SSL_CERT_PATH = os.environ.get("SSL_CERT_PATH", "certs/cert.pem")
+SSL_KEY_PATH = os.environ.get("SSL_KEY_PATH", "certs/key.pem")
+
+# ----------------------------------
+# Configuración de Flask
+# ----------------------------------
+FLASK_PORT = int(os.environ.get("FLASK_PORT", 5000))
+FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() == "true"

@@ -49,7 +49,7 @@ async def procesar_comando(websocket, usuario_id, mensaje):
             "comando": "/crear",
             "resultado": {
                 "exito": bool(canal_id),
-                "mensaje": f"Canal '{nombre}' creado con id {canal_id}" if canal_id else "❌ No se pudo crear. ¿Existe ya el nombre?"
+                "mensaje": f"Canal '{nombre}' creado" if canal_id else "❌ No se pudo crear. ¿Existe ya el nombre?"
             },
             "lista" : canales
         }))
@@ -74,7 +74,7 @@ async def procesar_comando(websocket, usuario_id, mensaje):
             "comando": "/crear_priv",
             "resultado": {
                 "exito": bool(canal_id),
-                "mensaje": f"Canal '{nombre}' creado con id {canal_id}" if canal_id else "❌ No se pudo crear. ¿Existe ya el nombre?"
+                "mensaje": f"Canal '{nombre}' creado" if canal_id else "❌ No se pudo crear. ¿Existe ya el nombre?"
             },
             "lista" : canales
         }))

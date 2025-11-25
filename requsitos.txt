@@ -1,21 +1,53 @@
-Flask>=2.0
-authlib>=1.2
-python-dotenv
-requests
+# ==================================
+# Dependencias - Chat Seguro v4.0
+# ==================================
+
+# Framework Web
 flask==3.0.2
 flask-cors==4.0.1
-websockets==12.0
-pymongo==4.6.2
-cryptography==41.0.7
-python-dotenv==1.0.1
-# Opcionales usados en algunos scripts
-itsdangerous==2.1.2
 werkzeug==3.0.1
 
-fastapi
-uvicorn
-pymongo
-passlib
-pycryptodome
-bcrypt
+# OAuth2 / Autenticación
+authlib>=1.2
+requests
 
+# WebSockets
+websockets==12.0
+
+# Base de datos
+pymongo==4.6.2
+
+# Criptografía y seguridad
+cryptography==41.0.7
+passlib[bcrypt]
+
+# Variables de ambiente
+python-dotenv==1.0.1
+
+# Utilidades
+itsdangerous==2.1.2
+bson
+
+# SSL/TLS
+pyOpenSSL>=23.0.0
+
+# ==================================
+# Módulo de Firma Digital
+# ==================================
+
+# Google Drive API
+google-api-python-client>=2.100.0
+google-auth-httplib2>=0.1.1
+google-auth-oauthlib>=1.1.0
+
+# Email (alternativa a Gmail API)
+# (smtplib está incluido en Python estándar)
+
+# ==================================
+# Para AWS/Producción (opcional)
+# ==================================
+gunicorn>=21.0.0
+gevent>=23.0.0
+
+# VPN / Túneles (opcional)
+# sshtunnel>=0.4.0

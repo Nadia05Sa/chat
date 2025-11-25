@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firma Digital - Chat Seguro</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --text-light: #e4e4e4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0f0f23 100%);
+            min-height: 100vh;
+            color: var(--text-light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 .icon {
+            font-size: 1.5rem;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--success);
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .upload-zone .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-zone p {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .upload-zone input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .file-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+        }
+
+        .file-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+
+        .file-details p {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .file-actions button {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .badge-signed {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-item .label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid var(--primary);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔐 Firma Digital</h1>
+            <nav class="nav-links">
+                <a href="/chat">💬 Chat</a>
+                <a href="/perfil">👤 Perfil</a>
+            </nav>
+        </header>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="number" id="stat-pendientes">0</div>
+                <div class="label">Pendientes</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" id="stat-firmados">0</div>
+                <div class="label">Firmados</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" id="stat-hoy">0</div>
+                <div class="label">Hoy</div>
+            </div>
+        </div>
+
+        <div id="alertas"></div>
+
+        <div class="grid">
+            <!-- Subir archivo -->
+            <div class="card">
+                <h2><span class="icon">📤</span> Subir Documento</h2>
+                <div class="upload-zone" id="upload-zone">
+                    <div class="icon">📄</div>
+                    <p>Arrastra archivos aquí o haz clic para seleccionar</p>
+                    <p><small>PDF, TXT, ZIP (máx. 50 MB)</small></p>
+                    <input type="file" id="file-input" accept=".pdf,.txt,.zip">
+                </div>
+                <button class="btn btn-primary" id="btn-subir" disabled>
+                    <span>📤</span> Subir Archivo
+                </button>
+            </div>
+
+            <!-- Archivos pendientes -->
+            <div class="card">
+                <h2><span class="icon">⏳</span> Pendientes de Firma</h2>
+                <div class="file-list" id="lista-pendientes">
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>No hay archivos pendientes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Archivos firmados -->
+            <div class="card">
+                <h2><span class="icon">✅</span> Documentos Firmados</h2>
+                <div class="file-list" id="lista-firmados">
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>No hay archivos firmados</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verificar firma -->
+            <div class="card">
+                <h2><span class="icon">🔍</span> Verificar Firma</h2>
+                <p style="margin-bottom: 15px; color: rgba(255,255,255,0.6);">
+                    Verifica la autenticidad de un documento firmado
+                </p>
+                <div class="form-group">
+                    <label>Documento</label>
+                    <input type="file" id="verificar-archivo" accept=".pdf,.txt,.zip">
+                </div>
+                <div class="form-group">
+                    <label>Archivo de firma (.sig)</label>
+                    <input type="file" id="verificar-firma" accept=".sig">
+                </div>
+                <button class="btn btn-primary" id="btn-verificar">
+                    <span>🔍</span> Verificar
+                </button>
+                <div id="resultado-verificacion" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Firmar -->
+    <div class="modal" id="modal-firmar">
+        <div class="modal-content">
+            <h3>✍️ Firmar Documento</h3>
+            <div class="form-group">
+                <label>Documento</label>
+                <input type="text" id="firma-archivo" readonly>
+            </div>
+            <div class="form-group">
+                <label>Razón de la firma</label>
+                <textarea id="firma-razon" rows="3" placeholder="Ej: Aprobación de documento..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-success" id="btn-confirmar-firma">
+                    <span>✍️</span> Firmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Autorización -->
+    <div class="modal" id="modal-autorizar">
+        <div class="modal-content">
+            <h3>📧 Enviar Autorización</h3>
+            <div class="form-group">
+                <label>Documento</label>
+                <input type="text" id="auth-archivo" readonly>
+            </div>
+            <div class="form-group">
+                <label>Email del autorizado</label>
+                <input type="email" id="auth-email" placeholder="usuario@ejemplo.com">
+            </div>
+            <div class="form-group">
+                <label>Nombre (opcional)</label>
+                <input type="text" id="auth-nombre" placeholder="Nombre del destinatario">
+            </div>
+            <div class="form-group">
+                <label>Mensaje adicional (opcional)</label>
+                <textarea id="auth-mensaje" rows="3" placeholder="Mensaje para el correo..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn btn-primary" id="btn-enviar-auth">
+                    <span>📧</span> Enviar Autorización
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado
+        let archivoSeleccionado = null;
+        let archivoParaFirmar = null;
+
+        // Elementos
+        const uploadZone = document.getElementById('upload-zone');
+        const fileInput = document.getElementById('file-input');
+        const btnSubir = document.getElementById('btn-subir');
+        const listaPendientes = document.getElementById('lista-pendientes');
+        const listaFirmados = document.getElementById('lista-firmados');
+
+        // ============================================
+        // DRAG AND DROP
+        // ============================================
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                seleccionarArchivo(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                seleccionarArchivo(e.target.files[0]);
+            }
+        });
+
+        function seleccionarArchivo(file) {
+            archivoSeleccionado = file;
+            uploadZone.innerHTML = `
+                <div class="icon">✅</div>
+                <p><strong>${file.name}</strong></p>
+                <p><small>${formatBytes(file.size)}</small></p>
+            `;
+            btnSubir.disabled = false;
+        }
+
+        // ============================================
+        // SUBIR ARCHIVO
+        // ============================================
+        btnSubir.addEventListener('click', async () => {
+            if (!archivoSeleccionado) return;
+
+            btnSubir.disabled = true;
+            btnSubir.innerHTML = '<span class="loading"></span> Subiendo...';
+
+            const formData = new FormData();
+            formData.append('file', archivoSeleccionado);
+
+            try {
+                const res = await fetch('/firma/subir', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (data.exito) {
+                    mostrarAlerta('success', `Archivo "${data.nombre}" subido correctamente`);
+                    cargarPendientes();
+                    resetUpload();
+                } else {
+                    mostrarAlerta('error', data.error || 'Error al subir archivo');
+                }
+            } catch (err) {
+                mostrarAlerta('error', 'Error de conexión');
+            }
+
+            btnSubir.disabled = false;
+            btnSubir.innerHTML = '<span>📤</span> Subir Archivo';
+        });
+
+        function resetUpload() {
+            archivoSeleccionado = null;
+            fileInput.value = '';
+            uploadZone.innerHTML = `
+                <div class="icon">📄</div>
+                <p>Arrastra archivos aquí o haz clic para seleccionar</p>
+                <p><small>PDF, TXT, ZIP (máx. 50 MB)</small></p>
+            `;
+            btnSubir.disabled = true;
+        }
+
+        // ============================================
+        // CARGAR LISTAS
+        // ============================================
+        async function cargarPendientes() {
+            try {
+                const res = await fetch('/firma/pendientes');
+                const archivos = await res.json();
+
+                document.getElementById('stat-pendientes').textContent = archivos.length;
+
+                if (archivos.length === 0) {
+                    listaPendientes.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <p>No hay archivos pendientes</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                listaPendientes.innerHTML = archivos.map(archivo => `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <span class="file-icon">${getFileIcon(archivo.nombre)}</span>
+                            <div class="file-details">
+                                <h4>${archivo.nombre}</h4>
+                                <p>${formatBytes(archivo.tamaño)} • ${formatDate(archivo.fecha_subida)}</p>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn btn-success" onclick="abrirModalFirmar('${archivo.nombre}')">
+                                ✍️ Firmar
+                            </button>
+                            <button class="btn btn-primary" onclick="abrirModalAutorizar('${archivo.nombre}')">
+                                📧
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error cargando pendientes:', err);
+            }
+        }
+
+        async function cargarFirmados() {
+            try {
+                const res = await fetch('/firma/firmados');
+                const archivos = await res.json();
+
+                document.getElementById('stat-firmados').textContent = archivos.length;
+
+                if (archivos.length === 0) {
+                    listaFirmados.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <p>No hay archivos firmados</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                listaFirmados.innerHTML = archivos.map(archivo => `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <span class="file-icon">${getFileIcon(archivo.nombre)}</span>
+                            <div class="file-details">
+                                <h4>${archivo.nombre}</h4>
+                                <p>Firmado: ${formatDate(archivo.fecha_firma)}</p>
+                                <p><small>Por: ${archivo.firmante?.nombre || archivo.firmante?.email || 'N/A'}</small></p>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn" onclick="descargar('${archivo.firma_path}')">
+                                📥
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error cargando firmados:', err);
+            }
+        }
+
+        // ============================================
+        // MODALES
+        // ============================================
+        function abrirModalFirmar(archivoId) {
+            archivoParaFirmar = archivoId;
+            document.getElementById('firma-archivo').value = archivoId;
+            document.getElementById('modal-firmar').classList.add('active');
+        }
+
+        function abrirModalAutorizar(archivoId) {
+            archivoParaFirmar = archivoId;
+            document.getElementById('auth-archivo').value = archivoId;
+            document.getElementById('modal-autorizar').classList.add('active');
+        }
+
+        function cerrarModal() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+        }
+
+        // ============================================
+        // FIRMAR
+        // ============================================
+        document.getElementById('btn-confirmar-firma').addEventListener('click', async () => {
+            const razon = document.getElementById('firma-razon').value;
+            const btn = document.getElementById('btn-confirmar-firma');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Firmando...';
+
+            try {
+                const res = await fetch('/firma/firmar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        archivo_id: archivoParaFirmar,
+                        razon: razon || 'Firma digital de documento'
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.exito) {
+                    mostrarAlerta('success', 'Documento firmado correctamente');
+                    cerrarModal();
+                    cargarPendientes();
+                    cargarFirmados();
+                } else {
+                    mostrarAlerta('error', data.error || 'Error al firmar');
+                }
+            } catch (err) {
+                mostrarAlerta('error', 'Error de conexión');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<span>✍️</span> Firmar';
+        });
+
+        // ============================================
+        // ENVIAR AUTORIZACIÓN
+        // ============================================
+        document.getElementById('btn-enviar-auth').addEventListener('click', async () => {
+            const email = document.getElementById('auth-email').value;
+            const nombre = document.getElementById('auth-nombre').value;
+            const mensaje = document.getElementById('auth-mensaje').value;
+            const btn = document.getElementById('btn-enviar-auth');
+
+            if (!email) {
+                mostrarAlerta('error', 'Ingresa un email');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Enviando...';
+
+            try {
+                const res = await fetch('/firma/solicitar-autorizacion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        archivo_id: archivoParaFirmar,
+                        email_autorizado: email,
+                        nombre_autorizado: nombre,
+                        mensaje: mensaje
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.exito) {
+                    mostrarAlerta('success', `Autorización enviada a ${email}`);
+                    cerrarModal();
+                } else {
+                    mostrarAlerta('error', data.error || 'Error al enviar');
+                }
+            } catch (err) {
+                mostrarAlerta('error', 'Error de conexión');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<span>📧</span> Enviar Autorización';
+        });
+
+        // ============================================
+        // VERIFICAR FIRMA
+        // ============================================
+        document.getElementById('btn-verificar').addEventListener('click', async () => {
+            const archivo = document.getElementById('verificar-archivo').files[0];
+            const firma = document.getElementById('verificar-firma').files[0];
+            const resultadoDiv = document.getElementById('resultado-verificacion');
+
+            if (!archivo || !firma) {
+                mostrarAlerta('error', 'Selecciona ambos archivos');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', archivo);
+            formData.append('signature', firma);
+
+            try {
+                const res = await fetch('/firma/verificar', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (data.valido) {
+                    resultadoDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <span>✅</span>
+                            <div>
+                                <strong>Firma válida</strong>
+                                <p>Firmado por: ${data.firmante?.nombre || data.firmante?.email || 'N/A'}</p>
+                                <p>Fecha: ${formatDate(data.fecha_firma)}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultadoDiv.innerHTML = `
+                        <div class="alert alert-error">
+                            <span>❌</span>
+                            <div>
+                                <strong>Firma inválida</strong>
+                                <p>${data.error || 'El documento ha sido modificado o la firma no es válida'}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                resultadoDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <span>❌</span> Error al verificar
+                    </div>
+                `;
+            }
+        });
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-MX', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': '📕',
+                'txt': '📄',
+                'zip': '📦'
+            };
+            return icons[ext] || '📄';
+        }
+
+        function mostrarAlerta(tipo, mensaje) {
+            const alertas = document.getElementById('alertas');
+            const id = Date.now();
+            alertas.insertAdjacentHTML('beforeend', `
+                <div class="alert alert-${tipo}" id="alert-${id}">
+                    <span>${tipo === 'success' ? '✅' : tipo === 'error' ? '❌' : 'ℹ️'}</span>
+                    ${mensaje}
+                </div>
+            `);
+            setTimeout(() => {
+                document.getElementById(`alert-${id}`)?.remove();
+            }, 5000);
+        }
+
+        function descargar(path) {
+            window.open(`/firma/descargar/${encodeURIComponent(path.split('/').pop())}`, '_blank');
+        }
+
+        // Cerrar modales al hacer clic fuera
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) cerrarModal();
+            });
+        });
+
+        // Cargar datos iniciales
+        cargarPendientes();
+        cargarFirmados();
+    </script>
+</body>
+</html>
+

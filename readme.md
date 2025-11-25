@@ -1,433 +1,496 @@
-# CHAT GRUPAL SEGURO - DOCUMENTACIÓN
+# 🔐 CHAT GRUPAL SEGURO
 
-=====================================
+> Sistema de chat en tiempo real con firma digital, cifrado de extremo a extremo y múltiples capas de seguridad.
 
-## INFORMACIÓN DEL PROYECTO
+![Version](https://img.shields.io/badge/version-4.0.0-blue)
+![Python](https://img.shields.io/badge/python-3.10+-green)
+![License](https://img.shields.io/badge/license-MIT-orange)
 
-- Nombre: Chat Grupal Seguro
-- Versión Actual: v4.0.0
-- Fecha de Inicio: 18/11/2025
-- EQUIPO DE CIBERSEGURIDAD
+---
 
-## DESCRIPCIÓN
+## 📋 Tabla de Contenidos
 
-Sistema de chat grupal en tiempo real con arquitectura híbrida (Flask + WebSockets) y múltiples capas de seguridad, diseñado para cumplir requisitos estrictos de integridad, confidencialidad y auditoría.
+- [Características](#-características)
+- [Requisitos](#-requisitos)
+- [Instalación Rápida](#-instalación-rápida)
+- [Configuración](#-configuración)
+- [Ejecución](#-ejecución)
+- [Módulos](#-módulos)
+- [API Endpoints](#-api-endpoints)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Despliegue en Producción](#-despliegue-en-producción)
+- [Solución de Problemas](#-solución-de-problemas)
 
-Incluye:
+---
 
-### SEGURIDAD
+## ✨ Características
 
- - AES-256-CBC
- - HMAC-SHA256
- - SHA-256 para auditoría
- - Sanidad avanzada de caracteres
- - Padding PKCS7
- - Validación de integridad antes del descifrado
+### 🔒 Seguridad
+| Característica | Descripción |
+|----------------|-------------|
+| **SSL/TLS** | HTTPS y WSS (WebSocket Secure) |
+| **Variables de Ambiente** | Sin credenciales hardcodeadas |
+| **AES-256-CBC** | Cifrado simétrico de mensajes |
+| **HMAC-SHA256** | Verificación de integridad |
+| **OAuth 2.0** | Autenticación con Google |
+| **Firma Digital RSA** | Firma de documentos PDF, TXT, ZIP |
 
-### BACKEND
+### 💬 Chat
+- Canales públicos y privados
+- Mensajes en tiempo real con WebSockets
+- Historial de mensajes persistente
+- Sistema de administradores por canal
+- Comandos de chat (`/crear`, `/unir`, `/salir`, etc.)
 
-- Servidor WebSocket dedicado
-- API REST con Flask
-- Manejo de canales y usuarios
-- Sistema de auditoría con archivo de logs
+### 📝 Firma Digital (NUEVO v4.0)
+- Firma de archivos PDF, TXT y ZIP
+- Verificación de firmas
+- Integración con Google Drive
+- Envío de autorizaciones por email
+- Tokens de un solo uso
 
-### FRONTEND
+---
 
-- Cliente moderno con:
-- Web Crypto API
-- Manejo de canales
-- Pantallas: login, chat, perfil, acceso denegado
-- Validación de comandos
-- Protección del historial para usuarios no autenticados
+## 📦 Requisitos
 
-## REQUISITOS DEL SISTEMA
+- **Python** 3.10 o superior
+- **MongoDB** (Atlas o local)
+- **Node.js** (opcional, para desarrollo frontend)
 
-### Python (Servidor)
+### Navegador Web
+- Chrome, Firefox, Edge, Safari (versiones modernas)
+- Soporte para WebSockets y ES6+
 
--Python 3.10+
--Dependencias:
-pip install websockets cryptography flask pymongo
+---
 
-### Cliente Web (Frontend)
+## 🚀 Instalación Rápida
 
-- Navegador web moderno con soporte para:
-  - WebSockets
-  - Web Crypto API
-  - ES6+ JavaScript
+### 1. Clonar el Proyecto
 
-## INSTALACIÓN
-
-1. Instalar dependencias de Python:
-
-   ```
-   pip install -r requisitos.txt
-   ```
-
-2. Configurar claves en config.py
-
-Incluye:
-
-- AES_KEY (32 bytes)
-- CLAVE_SECRETA (HMAC)
-- ENABLE_AUDIT
-- AUDIT_LOG_FILE
-
-3. Configurar archivo .env
-
-Incluye:
-
-- FLASK_SECRET
-- GOOGLE_CLIENT_ID
-- GOOGLE_CLIENT_SECRET
-
-4. Iniciar servidor Flask + WebSocket
-
-   ```
-      python app.py
-   ```
-
-5. Abrir el cliente
-
-Abrir en navegador: http://localhost:5000/login
-
-## ESTRUCTURA DE ARCHIVOS
-
-```
-chat_python_v3/
-├── __pycache__
-│
-├── static/
-│   ├── css/
-│   │   └── index.css
-│   └── js/
-│       ├── chat.js        # Lógica principal del chat
-│       ├── login.js       # Lógica de inicio de sesión
-│       └── crypto.js      # Cifrado AES, HMAC, derivación de claves
-│
-├── templates/
-│   ├── chat.html
-│   ├── login.html
-│   ├── denied.html
-│   └── perfil.html
-│
-├── .env                 # Variables de entorno
-│
-├── app.py                 # Arranque Flask + coordinación con WebSocket
-├── config.py              # Claves, configuración de seguridad, rutas de log
-├── db_manager.py          # MongoDB: usuarios, canales, mensajes
-├── index.py               # API REST (autenticación, perfiles, canales)
-├── keys.py                # Generación RSA opcional
-├── fernet_generator.py    # Genera claves Fernet (uso opcional)
-├── calcular_md5.py        # Hash MD5 para integridad de archivos
-├── security.py            # AES, HMAC, SHA256, auditoría, sanitización
-├── manejadores.py         # Lógica de mensajes WS y validación de paquetes
-└── ws_server.py           # Servidor WebSocket independiente
+```bash
+git clone <tu-repositorio>
+cd chat_python_v4
 ```
 
-## HISTORIAL DE VERSIONES
+### 2. Crear Entorno Virtual
 
-### v1.0.0 (18/11/2025)
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
 
-**Archivos:**
-
-- chat_server.py (MD5: PENDIENTE_CALCULAR)
-- index.html (MD5: PENDIENTE_CALCULAR)
-
-**Características Implementadas:**
-✓ Servidor WebSocket básico
-✓ Cifrado AES-256-CBC
-✓ HMAC-SHA256 para integridad
-✓ Interfaz de usuario moderna
-✓ Lista de usuarios en tiempo real
-✓ Manejo de múltiples conexiones simultáneas
-
-**Seguridad:**
-
-- Cifrado simétrico de 256 bits
-- Verificación de integridad con HMAC
-- IV aleatorio por mensaje
-- Padding PKCS7
-
-**Pendiente para v1.1.0:**
-
-- Implementar hash SHA-256 de mensajes
-- Agregar logs de auditoría
-- Implementar múltiples salas de chat
-- Agregar autenticación de usuarios
-
-## CONFIGURACIÓN DE SEGURIDAD
-
-### Claves de Cifrado
-
-**IMPORTANTE:** Las claves deben ser idénticas en servidor y cliente.
-
-**Servidor (chat_server.py):**
-
-```python
-AES_KEY = bytes([...])  # 32 bytes para AES-256
-CLAVE_SECRETA = b"clave_super_secreta"  # Para HMAC
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-**Cliente (index.html):**
+### 3. Instalar Dependencias
 
-```javascript
-const AES_KEY = new Uint8Array([...]);  // Mismos 32 bytes
-const CLAVE_SECRETA = "clave_super_secreta";  // Misma clave
+```bash
+pip install -r requsitos.txt
 ```
 
-### Generar Claves Seguras
+### 4. Configurar Variables de Ambiente
 
-Para producción, generar claves aleatorias:
+```bash
+# Windows (PowerShell)
+copy env.example .env
 
-```python
-import secrets
-key = secrets.token_bytes(32)
-print(f"Nueva clave: bytes({list(key)})")
+# Linux/Mac
+cp env.example .env
 ```
 
-## ARQUITECTURA DE SEGURIDAD
+### 5. Editar `.env` con tus Valores
 
-### Flujo de Cifrado (Cliente → Servidor)
+Abre el archivo `.env` y configura las siguientes variables **obligatorias**:
 
-1. Usuario escribe mensaje en texto plano
-2. Se genera IV aleatorio de 16 bytes
-3. Mensaje se cifra con AES-256-CBC
-4. Se aplica padding PKCS7
-5. Se calcula HMAC-SHA256 del (IV + ciphertext)
-6. Se envía: base64(IV+ciphertext)|HMAC_hex
-7. Servidor verifica HMAC
-8. Servidor descifra con AES-256-CBC
-9. Servidor remueve padding
-10. Mensaje se distribuye a otros usuarios
+```env
+# === OBLIGATORIAS ===
 
-### Formato de Paquete
+# Flask
+FLASK_SECRET=genera_una_clave_aleatoria_aqui
 
+# MongoDB
+MONGO_URI=mongodb+srv://usuario:password@cluster.mongodb.net
+DB_NAME=chat-cybersecurity
+
+# Claves de Cifrado
+AES_KEY_BASE64=<ver paso 6>
+HMAC_SECRET_KEY=<ver paso 6>
+
+# Google OAuth (obtener en Google Cloud Console)
+GOOGLE_CLIENT_ID=tu_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=tu_client_secret
 ```
-[IV:16bytes][Ciphertext:variable] | [HMAC:64chars_hex]
-         ↓                              ↓
-    Base64 URL-safe                 Hexadecimal
+
+### 6. Generar Claves de Cifrado
+
+```bash
+# Generar AES_KEY_BASE64 (copia el resultado a .env)
+python -c "import secrets, base64; print(base64.b64encode(secrets.token_bytes(32)).decode())"
+
+# Generar HMAC_SECRET_KEY (copia el resultado a .env)
+python -c "import secrets; print(secrets.token_hex(32))"
+
+# Generar FLASK_SECRET (copia el resultado a .env)
+python -c "import secrets; print(secrets.token_hex(24))"
 ```
 
-## USO DEL SISTEMA
-
-### Iniciar Servidor
+### 7. Ejecutar el Proyecto
 
 ```bash
 python app.py
 ```
 
-Salida esperada:
+### 8. Abrir en el Navegador
 
 ```
-✓ Longitud de AES_KEY: 32 bytes = 256 bits
-============================================================
-🚀 Servidor WebSocket Iniciado
-📡 Escuchando en: ws://0.0.0.0:5001
-🔐 Cifrado: AES-256-CBC + HMAC-SHA256
-============================================================
+http://localhost:5000/login
 ```
-
-### Conectar Cliente
-
-1. Abrir index.html en navegador
-2. Ingresar nombre de usuario cuando se solicite
-3. Comenzar a chatear
-
-### Verificar Conexión
-
-En la consola del navegador (F12) debe aparecer:
-
-```
-✓ Longitud de AES_KEY: 32 bytes = 256 bits
-✓ Conectado al servidor WebSocket
-```
-
-## SOLUCIÓN DE PROBLEMAS
-
-### Error: "could not bind on any address"
-
-- Verifica que el puerto 5001 no esté en uso
-- Ejecuta: `netstat -ano | findstr :5001`
-- Cambia IP_SERVIDOR a "0.0.0.0" o "localhost"
-
-### Error: "Invalid key size"
-
-- Las claves AES_KEY deben tener exactamente 32 bytes
-- Verifica que cliente y servidor usen la misma clave
-- Revisa los logs de debug en consola
-
-### Error: "HMAC inválido"
-
-- La CLAVE_SECRETA debe ser idéntica en cliente y servidor
-- Verifica que no haya espacios extra o caracteres ocultos
-- Asegúrate de usar la misma codificación (UTF-8)
-
-### No se conecta el WebSocket
-
-- Verifica la IP y puerto en index.html
-- Si el servidor usa 0.0.0.0, el cliente debe usar la IP real
-- Revisa el firewall y permisos de red
-
-## SEGURIDAD Y MEJORES PRÁCTICAS
-
-### ⚠️ ADVERTENCIAS DE SEGURIDAD
-
-1. **NO usar en producción sin cambiar las claves por defecto**
-2. **NO compartir las claves de cifrado públicamente**
-3. **Usar HTTPS/WSS en entornos de producción**
-4. **Implementar rate limiting para prevenir spam**
-5. **Sanitizar entrada de usuario para prevenir XSS**
-
-### Recomendaciones
-
-- Cambiar claves cada 30-90 días
-- Usar certificados SSL/TLS válidos
-- Implementar autenticación de usuarios
-- Agregar logs de auditoría
-- Hacer respaldos periódicos
-- Monitorear conexiones sospechosas
-
-### v1.1.0
-
-- [ ] Hash SHA-256 de mensajes para auditoría
-- [ ] Logs detallados con timestamps
-- [ ] Archivo de registro de mensajes
-
-### v1.2.0
-
-- [ ] Múltiples salas de chat
-- [ ] Mensajes privados entre usuarios
-- [ ] Historial de mensajes
-
-### v1.3.0
-
-- [ ] Autenticación de usuarios
-- [ ] Perfiles de usuario
-- [ ] Administración de permisos
-
-### v2.0.0
-
-- [ ] Base de datos persistente
-- [ ] Cifrado de extremo a extremo
-- [ ] Compartir archivos cifrados
-
-### v3.0.0 – Actual (18/11/2025)
-
-✔ Nuevo en esta versión:
-
-- Reestructuración completa del proyecto
-- security.py con:
-      - AES-256-CBC robusto
-      - HMAC-SHA256
-      - SHA-256 para auditoría
-      - Sanitización de caracteres
-- Auditoría habilitada con ENABLE_AUDIT
-- WebSocket separado (ws_server.py)
-- API REST con Flask (index.py)
-- Múltiples canales con MongoDB
-- Manejo de sesiones, perfiles y acceso denegado
-- Cliente reorganizado en pantallas
-- Validación de comandos en el frontend
-- Limpieza de historial al salir
-
-FLUJO DE SEGURIDAD (v3.0.0)
-1. Cliente → Servidor
-
-Texto plano → UTF-8
-
-AES-256-CBC con:
-- IV aleatorio
-- PKCS7
-
-Se genera:
-- cipher = IV + ciphertext
-- hmac = HMAC_SHA256(cipher)
-
-Cliente envía:
-
-{
-  "mensaje": "<base64>",
-  "hmac": "<hex>",
-  "canal_id": "...",
-  "fecha": "ISO8601"
-}
-
-2. Servidor valida
-
-- Valida HMAC
-- Descifra AES
-- Sanitiza texto
-- Calcula SHA-256 para auditoría
-- Registra log si ENABLE_AUDIT = True
-
-3. Servidor → Otros usuarios
-
-Reenvía mensaje en texto plano con usuario, fecha, canal, contenido.
-
-## SISTEMA DE AUDITORÍA (v3.0.0)
-Ubicación:
-logs/audit.log
-
-Cada entrada incluye:
-
-- Timestamp
-- Usuario
-- Hash SHA-256
-- Longitud del mensaje
-- Canal
-
-Ejemplo:
-
-[2025-11-18 22:11:03] | usuario123 | 2a9c...ff12 |   45 chars
-
-## CONFIGURACIÓN DE SEGURIDAD
-# Generar AES_KEY segura:
-import secrets
-key = secrets.token_bytes(32)
-print(list(key))
-
-# Generar clave HMAC:
-import secrets
-secrets.token_bytes(64)
-
-### SOLUCIÓN DE PROBLEMAS
-# HMAC inválido
-✔ Desincronización de CLAVE_SECRETA
-✔ Mensaje alterado
-✔ Diferente codificación
-
-# AES falla al descifrar
-✔ Clave incorrecta
-✔ IV corrupto
-✔ Padding inválido
-
-# No se conecta WebSocket
-✔ Revisar IP en chat.js
-✔ Puerto bloqueado
-✔ Firewall
-
-## ROADMAP FUTURO
-- Implementación de endpoint para inicio de sesión con Goolgle OAuth
-- Correccion de de detalles en frontend
-- Implementación de algunas nuevas características implementadas ya en el servidor
-
-## CONTACTO Y SOPORTE
-
-- Desarrollador: [Tu Email]
-- Repositorio: [URL del repositorio]
-- Documentación: Ver CONTROL_CAMBIOS.txt
-
-## LICENCIA
-
-[Especificar licencia del proyecto]
-
-## NOTAS FINALES
-
-Este sistema está diseñado para comunicaciones seguras en entornos
-controlados. Para uso en producción, se recomienda auditoría de
-seguridad profesional.
 
 ---
 
-Última actualización: 15/10/2025
-Versión del documento: 2.0
+## ⚙️ Configuración
+
+### Variables de Ambiente Completas
+
+| Variable | Descripción | Requerida |
+|----------|-------------|-----------|
+| `FLASK_SECRET` | Clave secreta de Flask | ✅ |
+| `FLASK_PORT` | Puerto de Flask (default: 5000) | ❌ |
+| `FLASK_DEBUG` | Modo debug (default: false) | ❌ |
+| `MONGO_URI` | URI de conexión MongoDB | ✅ |
+| `DB_NAME` | Nombre de la base de datos | ✅ |
+| `AES_KEY_BASE64` | Clave AES-256 en Base64 | ✅ |
+| `HMAC_SECRET_KEY` | Clave para HMAC | ✅ |
+| `GOOGLE_CLIENT_ID` | Client ID de Google OAuth | ✅ |
+| `GOOGLE_CLIENT_SECRET` | Client Secret de Google | ✅ |
+| `WS_HOST` | Host del WebSocket (default: 0.0.0.0) | ❌ |
+| `WS_PORT` | Puerto del WebSocket (default: 5001) | ❌ |
+| `SSL_ENABLED` | Habilitar SSL (default: false) | ❌ |
+| `SSL_CERT_PATH` | Ruta al certificado SSL | ❌ |
+| `SSL_KEY_PATH` | Ruta a la clave privada SSL | ❌ |
+
+### Variables para Firma Digital (Opcional)
+
+| Variable | Descripción |
+|----------|-------------|
+| `FIRMA_CERT_PATH` | Certificado para firmas |
+| `FIRMA_KEY_PATH` | Clave privada para firmas |
+| `UPLOAD_FOLDER` | Carpeta de uploads |
+| `GOOGLE_DRIVE_CREDENTIALS` | Credenciales de Google Drive |
+| `SMTP_SERVER` | Servidor SMTP |
+| `SMTP_PORT` | Puerto SMTP |
+| `SMTP_USER` | Usuario SMTP |
+| `SMTP_PASSWORD` | Contraseña SMTP |
+| `APP_BASE_URL` | URL base de la aplicación |
+
+---
+
+## ▶️ Ejecución
+
+### Modo Desarrollo (Recomendado para pruebas)
+
+```bash
+# Activar entorno virtual
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
+
+# Ejecutar
+python app.py
+```
+
+**Salida esperada:**
+
+```
+======================
+🚀 INICIANDO SERVIDOR
+======================
+[WS] Conectando Mongo...
+✓ Conectado a MongoDB: chat-cybersecurity
+✓ Colecciones e índices inicializados
+[WS] ⚠️  SSL/TLS deshabilitado (no recomendado para producción)
+[WS] Iniciando en ws://0.0.0.0:5001
+🌐 Iniciando Flask en http://127.0.0.1:5000 ...
+```
+
+### Modo Producción con SSL
+
+```bash
+# 1. Generar certificados
+python generar_certificados.py
+
+# 2. Editar .env
+# SSL_ENABLED=true
+
+# 3. Ejecutar
+python app.py
+```
+
+### Ejecutar Solo WebSocket (Producción)
+
+```bash
+python ws_server_standalone.py
+```
+
+### URLs Disponibles
+
+| URL | Descripción |
+|-----|-------------|
+| `http://localhost:5000/login` | Página de login |
+| `http://localhost:5000/chat` | Chat principal |
+| `http://localhost:5000/perfil` | Perfil de usuario |
+| `http://localhost:5000/firma/` | **Módulo de Firma Digital** |
+| `ws://localhost:5001` | WebSocket |
+
+---
+
+## 📦 Módulos
+
+### 💬 Chat (Principal)
+
+Sistema de chat en tiempo real con:
+
+- **Canales públicos**: Cualquier usuario puede unirse
+- **Canales privados**: Solo miembros invitados
+- **Comandos disponibles**:
+
+```
+/crear nombre       - Crear canal público
+/crear_priv nombre  - Crear canal privado
+/unir nombre        - Unirse a un canal
+/salir              - Volver al canal general
+/agregar email canal    - Agregar usuario (admin)
+/remover email canal    - Remover usuario (admin)
+/dar_admin email canal  - Dar permisos admin
+/quitar_admin email canal - Quitar permisos admin
+```
+
+### 🔐 Firma Digital (v4.0)
+
+Módulo para firmar digitalmente documentos:
+
+**Acceso:** `http://localhost:5000/firma/`
+
+**Funcionalidades:**
+
+1. **Subir documentos** (PDF, TXT, ZIP hasta 50MB)
+2. **Firmar documentos** con certificado digital RSA
+3. **Verificar firmas** existentes
+4. **Enviar autorizaciones** por email
+5. **Subir a Google Drive** documentos firmados
+
+**Configuración adicional:**
+
+```bash
+# Generar certificado de firma
+python -c "from firma_digital import FirmaDigitalService; FirmaDigitalService().generar_certificado_firma()"
+```
+
+**Para Google Drive:**
+1. Crear proyecto en [Google Cloud Console](https://console.cloud.google.com/)
+2. Habilitar Google Drive API
+3. Crear cuenta de servicio
+4. Descargar credenciales JSON
+5. Guardar como `credentials/google_drive_credentials.json`
+
+**Para emails:**
+- Configurar SMTP en `.env`
+- Para Gmail: usar [contraseña de aplicación](https://myaccount.google.com/apppasswords)
+
+---
+
+## 🔌 API Endpoints
+
+### Autenticación
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/login` | Página de login |
+| POST | `/login` | Login con email/password |
+| POST | `/register` | Registrar usuario |
+| GET | `/login_google` | Login con Google OAuth |
+| GET | `/auth` | Callback de Google OAuth |
+| GET | `/session_user` | Obtener usuario de sesión |
+
+### Chat
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/chat` | Página de chat |
+| GET | `/canales` | Listar todos los canales |
+| GET | `/canales/<usuario_id>` | Canales del usuario |
+| GET | `/usuarios` | Listar usuarios |
+| GET | `/perfil/<usuario_id>` | Perfil de usuario |
+
+### Firma Digital
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/firma/` | Panel de firma digital |
+| POST | `/firma/subir` | Subir archivo |
+| GET | `/firma/pendientes` | Archivos pendientes |
+| GET | `/firma/firmados` | Archivos firmados |
+| POST | `/firma/firmar` | Firmar archivo |
+| POST | `/firma/verificar` | Verificar firma |
+| POST | `/firma/solicitar-autorizacion` | Enviar autorización |
+| GET | `/firma/autorizar?token=xxx` | Autorizar firma |
+| POST | `/firma/subir-drive` | Subir a Google Drive |
+| GET | `/firma/certificado/info` | Info del certificado |
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+chat_python_v4/
+│
+├── 📄 app.py                    # Punto de entrada principal
+├── 📄 config.py                 # Configuración y variables de ambiente
+├── 📄 db_manager.py             # Gestor de MongoDB
+├── 📄 index.py                  # Rutas principales (auth, chat)
+├── 📄 ws_server.py              # Servidor WebSocket
+├── 📄 ws_server_standalone.py   # WebSocket standalone (producción)
+├── 📄 manejadores.py            # Lógica de mensajes WebSocket
+├── 📄 security.py               # Cifrado AES, HMAC, auditoría
+├── 📄 generar_certificados.py   # Generador de certificados SSL
+│
+├── 📁 firma_digital/            # Módulo de Firma Digital
+│   ├── __init__.py
+│   ├── firma_service.py         # Servicio de firma RSA
+│   ├── drive_service.py         # Google Drive API
+│   ├── email_service.py         # Envío de emails
+│   └── routes.py                # Endpoints de firma
+│
+├── 📁 static/
+│   ├── css/
+│   │   └── index.css
+│   └── js/
+│       ├── chat.js              # Lógica del chat
+│       └── login.js             # Lógica de login
+│
+├── 📁 templates/
+│   ├── chat.html
+│   ├── login.html
+│   ├── perfil.html
+│   ├── denied.html
+│   ├── firma.html               # Panel de firma digital
+│   └── firma_autorizada.html    # Autorización de firma
+│
+├── 📁 docs/
+│   └── DEPLOY_AWS.md            # Guía de despliegue
+│
+├── 📁 uploads/                  # Archivos subidos (generado)
+│   ├── pendientes/
+│   └── firmados/
+│
+├── 📁 certs/                    # Certificados SSL (generado)
+│
+├── 📄 env.example               # Plantilla de variables
+├── 📄 requsitos.txt             # Dependencias Python
+└── 📄 readme.md                 # Este archivo
+```
+
+---
+
+## 🌐 Despliegue en Producción
+
+Ver la guía completa en [`docs/DEPLOY_AWS.md`](docs/DEPLOY_AWS.md)
+
+### Resumen Rápido
+
+1. **Servidor**: AWS EC2, DigitalOcean, o VM con Ubuntu 22.04
+2. **Reverse Proxy**: Nginx
+3. **SSL**: Let's Encrypt (Certbot)
+4. **Proceso**: Systemd o PM2
+
+```bash
+# Instalar Gunicorn para producción
+pip install gunicorn
+
+# Ejecutar Flask con Gunicorn
+gunicorn --workers 4 --bind 0.0.0.0:5000 app:app
+
+# Ejecutar WebSocket en paralelo
+python ws_server_standalone.py
+```
+
+---
+
+## 🔧 Solución de Problemas
+
+### Error: "FLASK_SECRET no está configurada"
+
+```bash
+# Verifica que .env existe y tiene la variable
+cat .env | grep FLASK_SECRET
+
+# Genera una nueva clave
+python -c "import secrets; print(secrets.token_hex(24))"
+```
+
+### Error: "AES_KEY_BASE64 no está configurada"
+
+```bash
+# Genera la clave y agrégala a .env
+python -c "import secrets, base64; print(base64.b64encode(secrets.token_bytes(32)).decode())"
+```
+
+### Error: "MONGO_URI no está configurada"
+
+Verifica tu conexión a MongoDB Atlas o local en el archivo `.env`.
+
+### WebSocket no conecta
+
+1. Verifica que el puerto 5001 esté libre
+2. Revisa el firewall
+3. En producción, asegúrate de usar WSS con SSL
+
+```bash
+# Ver puertos en uso
+netstat -ano | findstr :5001
+```
+
+### Error de certificados SSL
+
+```bash
+# Regenerar certificados
+python generar_certificados.py
+```
+
+---
+
+## 📜 Historial de Versiones
+
+### v4.0.0 (Actual)
+- ✅ Módulo de Firma Digital completo
+- ✅ Integración con Google Drive
+- ✅ Envío de emails con autorización
+- ✅ Interfaz web para firmas
+- ✅ Documentación de despliegue AWS/VM
+
+### v3.5.0
+- ✅ Variables de ambiente (sin hardcoding)
+- ✅ SSL/TLS para Flask y WebSocket
+- ✅ Detección automática WS/WSS
+
+### v3.0.0
+- ✅ Sistema de canales públicos y privados
+- ✅ OAuth con Google
+- ✅ MongoDB para persistencia
+- ✅ Auditoría de mensajes
+
+---
+
+## 👥 Equipo
+
+- **Equipo de Ciberseguridad**
+
+## 📄 Licencia
+
+MIT License - Ver archivo LICENSE
+
+---
+
+**Última actualización:** 25/11/2025  
+**Versión del documento:** 4.0
