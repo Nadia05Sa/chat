@@ -2,80 +2,310 @@
 <html lang="es-MX">
   <head>
     <meta charset="UTF-8" />
-    <title>Login y Registro Chat</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background: #f4f4f4;
-      }
-      #container {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        width: 325px;
-        box-sizing: border-box;
-      }
-      input {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 1rem;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-      }
-      button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        background: #212e8e;
-        color: #fff;
-        cursor: pointer;
-        width: 100%;
-      }
-      h2 {
-        text-align: center;
-      }
-      .switch {
-        font-size: 0.9rem;
-        text-align: center;
-        margin-top: 1rem;
-        cursor: pointer;
-        color: #212e8e;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - Chat Seguro</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}"
+    />
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: auto;
+        padding: 2rem;
+      }
+
+      .login-container {
+        background: var(--surface);
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px var(--primario-sombra);
+        width: 380px;
+        max-width: 100%;
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .login-header .icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, var(--primario) 0%, var(--primario-focus) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .login-header .icon i {
+        font-size: 2.5rem;
+        color: white;
+      }
+
+      .login-header h2 {
+        color: var(--primario);
+        margin: 0;
+        font-size: 1.5rem;
+      }
+
+      .login-header p {
+        color: var(--surface-text);
+        opacity: 0.7;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: var(--surface-text);
+        font-size: 0.9rem;
+      }
+
+      .form-group label i {
+        width: 20px;
+        color: var(--secundario);
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid var(--primario-sombra);
+        border-radius: 10px;
+        font-size: 1rem;
+        background: var(--back);
+        color: var(--back-text);
+        font-family: inherit;
+        transition: all 0.3s;
+        box-sizing: border-box;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--primario);
+        box-shadow: 0 0 10px var(--primario-sombra);
+      }
+
+      .form-group input::placeholder {
+        color: #888;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-family: inherit;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+      }
+
+      .btn-primary {
+        background: var(--primario);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primario-focus);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px var(--primario-sombra);
+      }
+
+      .btn-google {
+        background: white;
+        color: #333;
+        border: 2px solid #ddd;
+      }
+
+      .btn-google:hover {
+        background: #f5f5f5;
+        border-color: #ccc;
+        transform: translateY(-2px);
+      }
+
+      .btn-google img {
+        width: 20px;
+        height: 20px;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: var(--surface-text);
+        opacity: 0.5;
+        font-size: 0.85rem;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--primario-sombra);
+      }
+
+      .divider span {
+        padding: 0 1rem;
+      }
+
+      .switch {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--surface-text);
+        font-size: 0.9rem;
+      }
+
+      .switch a {
+        color: var(--primario);
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .switch a:hover {
+        text-decoration: underline;
+      }
+
+      .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+      }
+
+      .alert-error {
+        background: rgba(215, 38, 61, 0.15);
+        border: 1px solid var(--span-color);
+        color: var(--span-color);
+      }
+
+      .alert-success {
+        background: rgba(4, 231, 98, 0.15);
+        border: 1px solid var(--active-color);
+        color: var(--active-color);
+      }
+
+      #form-register {
+        display: none;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--surface);
+        border: none;
+        padding: 0.75rem;
+        border-radius: 50%;
+        cursor: pointer;
+        color: var(--primario);
+        box-shadow: 0 2px 10px var(--primario-sombra);
+        transition: all 0.3s;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
+    </style>
   </head>
   <body>
-    <div id="container">
-      <h2 id="title">Login</h2>
+    <button class="theme-toggle" onclick="document.body.classList.toggle('dark')">
+      <i class="fas fa-moon"></i>
+    </button>
 
-      <div id="form-login">
-        <input type="email" id="login-email" placeholder="Correo" />
-        <input type="password" id="login-password" placeholder="Contraseña" />
-        <button id="btn-login" style="margin-bottom: 8px">Entrar</button>
-        <button onclick="window.location.href = '/login_google'">
-          Acceder con Google
-        </button>
-        <div class="switch" id="to-register">¿No tienes cuenta? Regístrate</div>
+    <div class="login-container">
+      <div class="login-header">
+        <div class="icon">
+          <i class="fas fa-shield-halved"></i>
+        </div>
+        <h2 id="title">Iniciar Sesión</h2>
+        <p>Chat Seguro con cifrado AES-256</p>
       </div>
 
-      <div id="form-register" style="display: none">
-        <input type="text" id="reg-nombre" placeholder="Nombre de usuario" />
-        <input type="text" id="reg-apellido" placeholder="Nombre de usuario" />
-        <input type="email" id="reg-email" placeholder="Correo" />
-        <input type="password" id="reg-password" placeholder="Contraseña" />
-        <button id="btn-register">Registrarse</button>
-        <div class="switch" id="to-login">¿Ya tienes cuenta? Inicia sesión</div>
+      <div id="alert-container"></div>
+
+      <!-- Formulario Login -->
+      <div id="form-login">
+        <div class="form-group">
+          <label><i class="fas fa-envelope"></i> Correo electrónico</label>
+          <input type="email" id="login-email" placeholder="tu@correo.com" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-lock"></i> Contraseña</label>
+          <input type="password" id="login-password" placeholder="••••••••" />
+        </div>
+        
+        <button class="btn btn-primary" id="btn-login">
+          <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+
+        <div class="divider"><span>o continúa con</span></div>
+
+        <button class="btn btn-google" onclick="window.location.href = '/login_google'">
+          <img src="https://www.google.com/favicon.ico" alt="Google">
+          Acceder con Google
+        </button>
+
+        <div class="switch">
+          ¿No tienes cuenta? <a id="to-register">Regístrate</a>
+        </div>
+      </div>
+
+      <!-- Formulario Registro -->
+      <div id="form-register">
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> Nombre</label>
+          <input type="text" id="reg-nombre" placeholder="Tu nombre" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> Apellido</label>
+          <input type="text" id="reg-apellido" placeholder="Tu apellido" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-envelope"></i> Correo electrónico</label>
+          <input type="email" id="reg-email" placeholder="tu@correo.com" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-lock"></i> Contraseña</label>
+          <input type="password" id="reg-password" placeholder="••••••••" />
+        </div>
+
+        <button class="btn btn-primary" id="btn-register">
+          <i class="fas fa-user-plus"></i> Registrarse
+        </button>
+
+        <div class="switch">
+          ¿Ya tienes cuenta? <a id="to-login">Inicia sesión</a>
+        </div>
       </div>
     </div>
 
@@ -83,85 +313,111 @@
       const loginForm = document.getElementById("form-login");
       const regForm = document.getElementById("form-register");
       const title = document.getElementById("title");
+      const alertContainer = document.getElementById("alert-container");
+
+      function showAlert(type, message) {
+        alertContainer.innerHTML = `
+          <div class="alert alert-${type}">
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
+            ${message}
+          </div>
+        `;
+        setTimeout(() => alertContainer.innerHTML = '', 5000);
+      }
 
       // Cambiar de login a registro
       document.getElementById("to-register").addEventListener("click", () => {
         loginForm.style.display = "none";
         regForm.style.display = "block";
-        title.innerText = "Registro";
+        title.innerText = "Crear Cuenta";
+        alertContainer.innerHTML = '';
       });
 
       document.getElementById("to-login").addEventListener("click", () => {
         loginForm.style.display = "block";
         regForm.style.display = "none";
-        title.innerText = "Login";
+        title.innerText = "Iniciar Sesión";
+        alertContainer.innerHTML = '';
       });
 
       // POST /register
-      document
-        .getElementById("btn-register")
-        .addEventListener("click", async () => {
-          const nombre = document.getElementById("reg-nombre").value.trim();
-          const apellido = document.getElementById("reg-apellido").value.trim();
-          const email = document.getElementById("reg-email").value.trim();
-          const password = document.getElementById("reg-password").value;
+      document.getElementById("btn-register").addEventListener("click", async () => {
+        const nombre = document.getElementById("reg-nombre").value.trim();
+        const apellido = document.getElementById("reg-apellido").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const password = document.getElementById("reg-password").value;
 
-          if (!nombre || !email || !password || !apellido)
-            return alert("Completa todos los campos");
+        if (!nombre || !email || !password || !apellido) {
+          return showAlert('error', 'Completa todos los campos');
+        }
 
-          try {
-            const res = await fetch("/register", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nombre, apellido, email, password }),
-            });
+        try {
+          const res = await fetch("/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre, apellido, email, password }),
+          });
 
-            const data = await res.json();
+          const data = await res.json();
 
-            if (!res.ok) return alert(data.error);
-
-            console.log(data);
-
-            alert("Registro exitoso! ID: " + data.user_id);
-            // Guardar localmente
-            sessionStorage.setItem("user_id", data.user_id);
-            window.location.href = "/chat";
-            window.history.replaceState({}, "", "/chat");
-          } catch (err) {
-            alert("Error en el registro: " + err);
+          if (!res.ok) {
+            return showAlert('error', data.error);
           }
-        });
+
+          showAlert('success', '¡Registro exitoso! Redirigiendo...');
+          sessionStorage.setItem("user_id", data.user_id);
+          
+          setTimeout(() => {
+            window.location.href = "/chat";
+          }, 1000);
+        } catch (err) {
+          showAlert('error', "Error en el registro: " + err);
+        }
+      });
 
       // POST /login
-      document
-        .getElementById("btn-login")
-        .addEventListener("click", async () => {
-          const email = document.getElementById("login-email").value.trim();
-          const password = document.getElementById("login-password").value;
+      document.getElementById("btn-login").addEventListener("click", async () => {
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
 
-          if (!email || !password) return alert("Completa todos los campos");
+        if (!email || !password) {
+          return showAlert('error', 'Completa todos los campos');
+        }
 
-          try {
-            const res = await fetch("/login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
-            });
-            const data = await res.json();
-            if (!res.ok) return alert(data.error);
+        try {
+          const res = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await res.json();
+          
+          if (!res.ok) {
+            return showAlert('error', data.error);
+          }
 
-            alert("Login exitoso! ID: " + data.user_id);
-            sessionStorage.setItem("user_id", data.user_id);
-            sessionStorage.setItem("nombre", data.nombre);
+          showAlert('success', '¡Bienvenido! Redirigiendo...');
+          sessionStorage.setItem("user_id", data.user_id);
+          
+          setTimeout(() => {
             window.location.href = "/chat";
-          } catch (err) {
-            alert("Error en login: " + err);
+          }, 1000);
+        } catch (err) {
+          showAlert('error', "Error en login: " + err);
+        }
+      });
+
+      // Enter para enviar
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            if (loginForm.style.display !== 'none') {
+              document.getElementById('btn-login').click();
+            } else {
+              document.getElementById('btn-register').click();
+            }
           }
         });
-
-      //Ir a Google
-      document.getElementById("btn-login").addEventListener("click", () => {
-        window.location.href = "/login_google";
       });
     </script>
   </body>

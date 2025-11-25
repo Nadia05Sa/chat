@@ -1,15 +1,459 @@
 <!DOCTYPE html>
-<html>
+<html lang="es-MX">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Page Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <script src="main.js"></script>
+    <title>Mi Perfil - Chat Seguro</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}"
+    />
+    <style>
+      body {
+        overflow: auto;
+      }
+
+      .perfil-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .perfil-header {
+        background: var(--surface);
+        color: var(--surface-text);
+        padding: 1rem 2rem;
+        box-shadow: 0px 0px 2px var(--primario-sombra);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .perfil-header h1 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--primario);
+        font-size: 1.4rem;
+        margin: 0;
+      }
+
+      .perfil-nav {
+        display: flex;
+        gap: 10px;
+      }
+
+      .perfil-nav a {
+        color: var(--primario);
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: var(--back);
+        transition: all 0.3s;
+        font-size: 0.9rem;
+      }
+
+      .perfil-nav a:hover {
+        background: var(--primario);
+        color: white;
+      }
+
+      .perfil-content {
+        flex: 1;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .perfil-card {
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px var(--primario-sombra);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .perfil-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        background: var(--back);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid var(--primario);
+        overflow: hidden;
+      }
+
+      .perfil-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .perfil-avatar i {
+        font-size: 3rem;
+        color: var(--primario);
+      }
+
+      .perfil-name {
+        font-size: 1.5rem;
+        color: var(--surface-text);
+        margin-bottom: 0.25rem;
+      }
+
+      .perfil-email {
+        color: var(--surface-text);
+        opacity: 0.7;
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stat-item {
+        background: var(--back);
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .stat-item .number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primario);
+      }
+
+      .stat-item .label {
+        font-size: 0.8rem;
+        color: var(--surface-text);
+        opacity: 0.7;
+      }
+
+      .info-list {
+        text-align: left;
+        margin-top: 1.5rem;
+      }
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: var(--back);
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+      }
+
+      .info-item i {
+        width: 40px;
+        height: 40px;
+        background: var(--primario);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+      }
+
+      .info-item .info-content {
+        flex: 1;
+      }
+
+      .info-item .info-label {
+        font-size: 0.8rem;
+        color: var(--surface-text);
+        opacity: 0.7;
+      }
+
+      .info-item .info-value {
+        font-size: 1rem;
+        color: var(--surface-text);
+        font-weight: 500;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        font-family: inherit;
+        font-weight: 600;
+      }
+
+      .btn-danger {
+        background: var(--span-color);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #a01d30;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: var(--back);
+        color: var(--surface-text);
+        margin-right: 0.5rem;
+      }
+
+      .btn-secondary:hover {
+        background: var(--primario-sombra);
+      }
+
+      .actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .badge-active {
+        background: rgba(4, 231, 98, 0.2);
+        color: var(--active-color);
+      }
+
+      .badge-inactive {
+        background: rgba(215, 38, 61, 0.2);
+        color: var(--span-color);
+      }
+
+      .loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+      }
+
+      .loading lord-icon {
+        width: 150px;
+        height: 150px;
+      }
+
+      @media (max-width: 500px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .perfil-header {
+          flex-direction: column;
+          gap: 1rem;
+        }
+      }
+    </style>
   </head>
   <body>
-    <button id="salir">Cerrar sesión</button>
+    <div class="perfil-container">
+      <header class="perfil-header">
+        <h1><i class="fas fa-user-circle"></i> Mi Perfil</h1>
+        <nav class="perfil-nav">
+          <a href="/chat"><i class="fas fa-message"></i> Chat</a>
+          <a href="/firma/"><i class="fas fa-file-signature"></i> Firma</a>
+          <a href="#" onclick="document.body.classList.toggle('dark'); return false;">
+            <i class="fas fa-moon"></i> Tema
+          </a>
+        </nav>
+      </header>
+
+      <main class="perfil-content">
+        <div class="perfil-card" id="perfil-card">
+          <div class="loading" id="loading">
+            <lord-icon
+              src="https://cdn.lordicon.com/xjovhxra.json"
+              trigger="loop"
+              colors="primary:#212e8e,secondary:#e8833a"
+            ></lord-icon>
+            <p>Cargando perfil...</p>
+          </div>
+
+          <div id="perfil-data" style="display: none;">
+            <div class="perfil-avatar" id="avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            
+            <h2 class="perfil-name" id="nombre">Usuario</h2>
+            <p class="perfil-email" id="email">email@ejemplo.com</p>
+            <span class="badge badge-active" id="estado">Activo</span>
+
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="number" id="total-mensajes">0</div>
+                <div class="label">Mensajes</div>
+              </div>
+              <div class="stat-item">
+                <div class="number" id="total-conexiones">0</div>
+                <div class="label">Conexiones</div>
+              </div>
+              <div class="stat-item">
+                <div class="number" id="dias-activo">0</div>
+                <div class="label">Días</div>
+              </div>
+            </div>
+
+            <div class="info-list">
+              <div class="info-item">
+                <i class="fas fa-calendar-plus"></i>
+                <div class="info-content">
+                  <div class="info-label">Primera conexión</div>
+                  <div class="info-value" id="primera-conexion">-</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <div class="info-content">
+                  <div class="info-label">Última conexión</div>
+                  <div class="info-value" id="ultima-conexion">-</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-globe"></i>
+                <div class="info-content">
+                  <div class="info-label">Última IP</div>
+                  <div class="info-value" id="ip">-</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <a href="/chat" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Chat
+              </a>
+              <button class="btn btn-danger" id="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const usuarioId = sessionStorage.getItem('user_id');
+
+      async function cargarPerfil() {
+        if (!usuarioId) {
+          window.location.href = '/denied';
+          return;
+        }
+
+        try {
+          const res = await fetch(`/perfil/${usuarioId}`);
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error);
+          }
+
+          // Ocultar loading
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('perfil-data').style.display = 'block';
+
+          // Avatar
+          const avatar = document.getElementById('avatar');
+          if (data.picture) {
+            avatar.innerHTML = `<img src="${data.picture}" alt="Avatar">`;
+          }
+
+          // Datos básicos
+          document.getElementById('nombre').textContent = `${data.nombre} ${data.apellido || ''}`.trim();
+          document.getElementById('email').textContent = data.email || 'Sin email';
+
+          // Estado
+          const estadoBadge = document.getElementById('estado');
+          if (data.activo) {
+            estadoBadge.textContent = 'Activo';
+            estadoBadge.className = 'badge badge-active';
+          } else {
+            estadoBadge.textContent = 'Inactivo';
+            estadoBadge.className = 'badge badge-inactive';
+          }
+
+          // Estadísticas
+          document.getElementById('total-mensajes').textContent = data.total_mensajes || 0;
+          document.getElementById('total-conexiones').textContent = data.total_conexiones || 0;
+
+          // Calcular días activo
+          if (data.primera_conexion) {
+            const primera = new Date(data.primera_conexion);
+            const ahora = new Date();
+            const dias = Math.floor((ahora - primera) / (1000 * 60 * 60 * 24));
+            document.getElementById('dias-activo').textContent = dias;
+          }
+
+          // Fechas
+          if (data.primera_conexion) {
+            document.getElementById('primera-conexion').textContent = formatDate(data.primera_conexion);
+          }
+          if (data.ultima_conexion) {
+            document.getElementById('ultima-conexion').textContent = formatDate(data.ultima_conexion);
+          }
+
+          // IP
+          document.getElementById('ip').textContent = data.ip_ultima || 'No disponible';
+
+        } catch (err) {
+          console.error('Error cargando perfil:', err);
+          document.getElementById('loading').innerHTML = `
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--span-color); margin-bottom: 1rem;"></i>
+            <p>Error al cargar el perfil</p>
+            <a href="/chat" class="btn btn-secondary" style="margin-top: 1rem;">Volver al Chat</a>
+          `;
+        }
+      }
+
+      function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('es-MX', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      // Cerrar sesión
+      document.getElementById('btn-logout').addEventListener('click', () => {
+        sessionStorage.clear();
+        window.location.href = '/login';
+      });
+
+      // Cargar al inicio
+      cargarPerfil();
+    </script>
   </body>
-  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </html>

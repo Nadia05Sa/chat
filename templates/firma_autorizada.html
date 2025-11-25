@@ -1,281 +1,370 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="es-MX">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Autorización de Firma - Chat Seguro</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}"
+    />
     <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --success: #28a745;
-            --bg-dark: #1a1a2e;
-            --bg-card: #16213e;
-            --text-light: #e4e4e4;
-        }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: auto;
+        padding: 2rem;
+      }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      .auth-container {
+        background: var(--surface);
+        border-radius: 16px;
+        padding: 2.5rem;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0px 4px 20px var(--primario-sombra);
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #0f0f23 100%);
-            min-height: 100vh;
-            color: var(--text-light);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+      .auth-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--primario) 0%, var(--primario-focus) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-        .container {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+      .auth-icon i {
+        font-size: 3.5rem;
+        color: white;
+      }
 
-        .icon-large {
-            font-size: 5rem;
-            margin-bottom: 20px;
-        }
+      h1 {
+        font-size: 1.6rem;
+        margin-bottom: 0.5rem;
+        color: var(--primario);
+      }
 
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+      .subtitle {
+        color: var(--surface-text);
+        opacity: 0.7;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+      }
 
-        .subtitle {
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 30px;
-        }
+      .info-box {
+        background: var(--back);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        text-align: left;
+        border-left: 4px solid var(--primario);
+      }
 
-        .info-box {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            text-align: left;
-        }
+      .info-box p {
+        margin: 0.5rem 0;
+        color: var(--surface-text);
+        font-size: 0.95rem;
+      }
 
-        .info-box p {
-            margin-bottom: 10px;
-        }
+      .info-box strong {
+        color: var(--primario);
+      }
 
-        .info-box strong {
-            color: var(--primary);
-        }
+      .info-box i {
+        width: 20px;
+        color: var(--secundario);
+      }
 
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
+      .permisos {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
+      .permiso {
+        padding: 6px 16px;
+        background: rgba(33, 46, 142, 0.1);
+        border: 1px solid var(--primario);
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: var(--primario);
+        font-weight: 500;
+      }
 
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.05);
-            color: var(--text-light);
-            font-size: 1rem;
-            resize: vertical;
-        }
+      .form-group {
+        margin-bottom: 1.25rem;
+        text-align: left;
+      }
 
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--surface-text);
+        font-size: 0.9rem;
+      }
 
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            justify-content: center;
-        }
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid var(--primario-sombra);
+        border-radius: 10px;
+        background: var(--back);
+        color: var(--back-text);
+        font-size: 0.95rem;
+        font-family: inherit;
+        resize: vertical;
+        transition: all 0.3s;
+      }
 
-        .btn-success {
-            background: linear-gradient(135deg, var(--success), #20c997);
-            color: white;
-        }
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primario);
+        box-shadow: 0 0 10px var(--primario-sombra);
+      }
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
-        }
+      .btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.05rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        font-family: inherit;
+        font-weight: 600;
+      }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
+      .btn-success {
+        background: linear-gradient(135deg, var(--active-color) 0%, #02b84c 100%);
+        color: white;
+      }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s linear infinite;
-        }
+      .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(4, 231, 98, 0.4);
+      }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
 
-        .permisos {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+      }
 
-        .permiso {
-            padding: 5px 15px;
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid var(--primary);
-            border-radius: 20px;
-            font-size: 0.85rem;
-        }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
 
-        .resultado {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
-        }
+      .resultado {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: left;
+      }
 
-        .resultado.success {
-            background: rgba(40, 167, 69, 0.2);
-            border: 1px solid var(--success);
-        }
+      .resultado.success {
+        background: rgba(4, 231, 98, 0.15);
+        border: 1px solid var(--active-color);
+      }
 
-        .resultado.error {
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid #dc3545;
-        }
+      .resultado.success h3 {
+        color: var(--active-color);
+        margin-bottom: 1rem;
+      }
 
-        .resultado h3 {
-            margin-bottom: 10px;
-        }
+      .resultado.error {
+        background: rgba(215, 38, 61, 0.15);
+        border: 1px solid var(--span-color);
+      }
 
-        .footer {
-            margin-top: 30px;
-            color: rgba(255,255,255,0.4);
-            font-size: 0.85rem;
-        }
+      .resultado.error h3 {
+        color: var(--span-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .resultado h3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+      }
+
+      .hash-box {
+        background: var(--back);
+        padding: 10px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.7rem;
+        word-break: break-all;
+        color: var(--surface-text);
+        margin-top: 0.5rem;
+      }
+
+      .footer {
+        margin-top: 2rem;
+        color: var(--surface-text);
+        opacity: 0.5;
+        font-size: 0.8rem;
+      }
+
+      .warning-box {
+        background: rgba(232, 131, 58, 0.15);
+        border: 1px solid var(--secundario);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+
+      .warning-box strong {
+        color: var(--secundario);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 0.5rem;
+      }
+
+      .warning-box ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--surface-text);
+      }
+
+      .warning-box li {
+        margin: 0.3rem 0;
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <div class="icon-large">✍️</div>
-        <h1>Autorización de Firma</h1>
-        <p class="subtitle">Has sido autorizado para firmar el siguiente documento</p>
+  </head>
+  <body>
+    <div class="auth-container">
+      <div class="auth-icon">
+        <i class="fas fa-pen-nib"></i>
+      </div>
+      
+      <h1>Autorización de Firma</h1>
+      <p class="subtitle">Has sido autorizado para firmar el siguiente documento</p>
 
-        <div class="info-box">
-            <p><strong>📄 Documento:</strong> {{ archivo_id }}</p>
-            <p><strong>⏰ Autorización válida por:</strong> 24 horas</p>
-        </div>
+      <div class="info-box">
+        <p><i class="fas fa-file-alt"></i> <strong>Documento:</strong> {{ archivo_id }}</p>
+        <p><i class="fas fa-clock"></i> <strong>Válido por:</strong> 24 horas</p>
+      </div>
 
-        <div class="permisos">
-            {% for permiso in permisos %}
-            <span class="permiso">{{ permiso }}</span>
-            {% endfor %}
-        </div>
+      <div class="permisos">
+        {% for permiso in permisos %}
+        <span class="permiso"><i class="fas fa-check"></i> {{ permiso }}</span>
+        {% endfor %}
+      </div>
 
-        <div class="form-group">
-            <label for="razon">Razón de la firma (opcional)</label>
-            <textarea id="razon" rows="3" placeholder="Ej: Aprobación del documento..."></textarea>
-        </div>
+      <div class="warning-box">
+        <strong><i class="fas fa-exclamation-triangle"></i> Importante</strong>
+        <ul>
+          <li>Este enlace es de un solo uso</li>
+          <li>Expira en 24 horas</li>
+          <li>No compartas este enlace</li>
+        </ul>
+      </div>
 
-        <button class="btn btn-success" id="btn-firmar">
-            <span>✍️</span> Firmar Documento
-        </button>
+      <div class="form-group">
+        <label for="razon"><i class="fas fa-comment"></i> Razón de la firma (opcional)</label>
+        <textarea id="razon" rows="3" placeholder="Ej: Aprobación del documento..."></textarea>
+      </div>
 
-        <div id="resultado" style="display: none;"></div>
+      <button class="btn btn-success" id="btn-firmar">
+        <i class="fas fa-signature"></i> Firmar Documento
+      </button>
 
-        <div class="footer">
-            <p>Sistema de Firma Digital - Chat Seguro</p>
-        </div>
+      <div id="resultado" style="display: none;"></div>
+
+      <div class="footer">
+        <p>Sistema de Firma Digital - Chat Seguro</p>
+      </div>
     </div>
 
     <script>
-        const btn = document.getElementById('btn-firmar');
-        const resultadoDiv = document.getElementById('resultado');
+      const btn = document.getElementById('btn-firmar');
+      const resultadoDiv = document.getElementById('resultado');
 
-        btn.addEventListener('click', async () => {
-            const razon = document.getElementById('razon').value;
+      btn.addEventListener('click', async () => {
+        const razon = document.getElementById('razon').value;
 
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Firmando...';
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"></span> Firmando documento...';
 
-            try {
-                const res = await fetch('/firma/ejecutar-firma-autorizada', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        razon: razon || 'Firma digital autorizada'
-                    })
-                });
+        try {
+          const res = await fetch('/firma/ejecutar-firma-autorizada', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razon: razon || 'Firma digital autorizada'
+            })
+          });
 
-                const data = await res.json();
+          const data = await res.json();
 
-                resultadoDiv.style.display = 'block';
+          resultadoDiv.style.display = 'block';
 
-                if (data.exito) {
-                    resultadoDiv.className = 'resultado success';
-                    resultadoDiv.innerHTML = `
-                        <h3>✅ ¡Documento firmado exitosamente!</h3>
-                        <p>Hash SHA-256:</p>
-                        <code style="font-size: 0.7rem; word-break: break-all;">${data.hash}</code>
-                        <p style="margin-top: 15px;">
-                            Se ha enviado un correo de confirmación.
-                        </p>
-                    `;
-                    btn.style.display = 'none';
-                } else {
-                    resultadoDiv.className = 'resultado error';
-                    resultadoDiv.innerHTML = `
-                        <h3>❌ Error al firmar</h3>
-                        <p>${data.error || 'No se pudo completar la firma'}</p>
-                    `;
-                    btn.disabled = false;
-                    btn.innerHTML = '<span>✍️</span> Reintentar';
-                }
-            } catch (err) {
-                resultadoDiv.style.display = 'block';
-                resultadoDiv.className = 'resultado error';
-                resultadoDiv.innerHTML = `
-                    <h3>❌ Error de conexión</h3>
-                    <p>No se pudo conectar con el servidor</p>
-                `;
-                btn.disabled = false;
-                btn.innerHTML = '<span>✍️</span> Reintentar';
-            }
-        });
+          if (data.exito) {
+            resultadoDiv.className = 'resultado success';
+            resultadoDiv.innerHTML = `
+              <h3><i class="fas fa-check-circle"></i> ¡Documento firmado!</h3>
+              <p>Tu firma digital ha sido aplicada correctamente.</p>
+              <p style="margin-top: 1rem;"><strong>Hash SHA-256:</strong></p>
+              <div class="hash-box">${data.hash}</div>
+              <p style="margin-top: 1rem; opacity: 0.7;">
+                <i class="fas fa-envelope"></i> Se ha enviado un correo de confirmación.
+              </p>
+            `;
+            btn.style.display = 'none';
+          } else {
+            resultadoDiv.className = 'resultado error';
+            resultadoDiv.innerHTML = `
+              <h3><i class="fas fa-times-circle"></i> Error al firmar</h3>
+              <p>${data.error || 'No se pudo completar la firma'}</p>
+            `;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-redo"></i> Reintentar';
+          }
+        } catch (err) {
+          resultadoDiv.style.display = 'block';
+          resultadoDiv.className = 'resultado error';
+          resultadoDiv.innerHTML = `
+            <h3><i class="fas fa-exclamation-triangle"></i> Error de conexión</h3>
+            <p>No se pudo conectar con el servidor</p>
+          `;
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-redo"></i> Reintentar';
+        }
+      });
     </script>
-</body>
+  </body>
 </html>
-
