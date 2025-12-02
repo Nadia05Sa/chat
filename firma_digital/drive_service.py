@@ -68,7 +68,7 @@ class GoogleDriveService:
             )
             
             self.service = build('drive', 'v3', credentials=credentials)
-            print("✓ Conectado a Google Drive")
+            print("[+] Conectado a Google Drive")
             return self.service
             
         except ImportError:
@@ -104,7 +104,7 @@ class GoogleDriveService:
         ).execute()
         
         folder_id = folder.get('id')
-        print(f"✓ Carpeta creada: {nombre} (ID: {folder_id})")
+        print(f"[+] Carpeta creada: {nombre} (ID: {folder_id})")
         
         return folder_id
     
@@ -204,7 +204,7 @@ class GoogleDriveService:
             fields='id, name, webViewLink, webContentLink'
         ).execute()
         
-        print(f"✓ Archivo subido: {nombre}")
+        print(f"[+] Archivo subido: {nombre}")
         
         return {
             'id': file.get('id'),
@@ -293,7 +293,7 @@ class GoogleDriveService:
             emailMessage=mensaje
         ).execute()
         
-        print(f"✓ Archivo compartido con {email} ({rol})")
+        print(f"[+] Archivo compartido con {email} ({rol})")
         
         return {
             'permission_id': result.get('id'),
@@ -355,4 +355,5 @@ def get_drive_service() -> GoogleDriveService:
     if _drive_service is None:
         _drive_service = GoogleDriveService()
     return _drive_service
+
 

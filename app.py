@@ -24,7 +24,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET')
 
 if not app.secret_key:
-    raise ValueError("❌ ERROR: FLASK_SECRET no está configurada en las variables de ambiente.")
+    raise ValueError("[ERROR] FLASK_SECRET no esta configurada en las variables de ambiente.")
 
 # Configuración de subida de archivos
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB máximo
@@ -77,7 +77,7 @@ def _crear_contexto_ssl_flask():
     """
     if not os.path.exists(SSL_CERT_PATH):
         raise FileNotFoundError(
-            f"❌ ERROR: Certificado SSL no encontrado en: {SSL_CERT_PATH}\n"
+            f"[ERROR] Certificado SSL no encontrado en: {SSL_CERT_PATH}\n"
             "Genera certificados autofirmados con:\n"
             "  mkdir certs\n"
             '  openssl req -x509 -newkey rsa:4096 -keyout certs/key.pem -out certs/cert.pem -days 365 -nodes -subj "/CN=localhost"'
@@ -92,7 +92,7 @@ def _crear_contexto_ssl_flask():
 
 if __name__ == "__main__":
     print("\n======================")
-    print("🚀 INICIANDO SERVIDOR")
+    print("[+] INICIANDO SERVIDOR")
     print("======================")
 
     # Lanzar servidor WebSocket en segundo plano
@@ -101,10 +101,10 @@ if __name__ == "__main__":
 
     try:
         protocolo = "https" if SSL_ENABLED else "http"
-        print(f"🌐 Iniciando Flask en {protocolo}://127.0.0.1:{FLASK_PORT} ...")
+        print(f"[*] Iniciando Flask en {protocolo}://127.0.0.1:{FLASK_PORT} ...")
         
         if SSL_ENABLED:
-            print("🔒 SSL/TLS habilitado para Flask (HTTPS)")
+            print("[+] SSL/TLS habilitado para Flask (HTTPS)")
             ssl_context = _crear_contexto_ssl_flask()
             app.run(
                 debug=FLASK_DEBUG, 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
                 ssl_context=ssl_context
             )
         else:
-            print("⚠️  SSL/TLS deshabilitado (no recomendado para producción)")
+            print("[!] SSL/TLS deshabilitado (no recomendado para produccion)")
             app.run(
                 debug=FLASK_DEBUG, 
                 port=FLASK_PORT, 
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\n======================")
-        print("🛑 Servidor detenido con CTRL+C")
+        print("[x] Servidor detenido con CTRL+C")
         print("======================")
 
     finally:
@@ -131,5 +131,5 @@ if __name__ == "__main__":
         if db_manager.conectado:
             db_manager.cerrar()
 
-        print("✓ Recursos limpiados correctamente")
+        print("[+] Recursos limpiados correctamente")
         print("======================\n")

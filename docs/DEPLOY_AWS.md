@@ -494,3 +494,6 @@ websocat wss://tu-dominio.com:5001
 sudo journalctl -u chat-seguro --since "1 hour ago"
 ```
 
+
+
+

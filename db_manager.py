@@ -29,10 +29,10 @@ class DatabaseManager:
             self.db = self.client[self.db_name]
             self.conectado = True
             self._inicializar_colecciones()
-            print(f"✓ Conectado a MongoDB: {self.db_name}")
+            print(f"[+] Conectado a MongoDB: {self.db_name}")
             return True
         except ConnectionFailure as e:
-            print(f"✗ Error al conectar a MongoDB: {e}")
+            print(f"[x] Error al conectar a MongoDB: {e}")
             self.conectado = False
             return False
 
@@ -93,7 +93,7 @@ class DatabaseManager:
         except Exception:
             pass
 
-        print("✓ Colecciones e índices inicializados")
+        print("[+] Colecciones e indices inicializados")
 
     # -------------------------------
     # USUARIOS
@@ -711,12 +711,110 @@ class DatabaseManager:
             return {}
 
     # -------------------------------
+    # TOKENS DE AUTORIZACIÓN (Firma Digital)
+    # -------------------------------
+    def obtener_usuario_por_email(self, email: str) -> dict | None:
+        """Busca usuario por email. Devuelve documento con _id string o None."""
+        if not self.conectado:
+            return None
+        try:
+            user = self.db.usuarios.find_one({"email": email})
+            if not user:
+                return None
+            return {
+                "_id": str(user["_id"]),
+                "nombre": user.get("nombre"),
+                "apellido": user.get("apellido"),
+                "email": user.get("email"),
+                "picture": user.get("picture"),
+                "activo": user.get("activo", False)
+            }
+        except Exception as e:
+            print(f"[DB ERROR] obtener_usuario_por_email: {e}")
+            return None
+
+    def guardar_token_autorizacion(self, token: str, usuario_email: str, archivo_id: str, 
+                                    permisos: list, expiracion: datetime, solicitante_id: str) -> bool:
+        """Guarda un token de autorización en la base de datos."""
+        if not self.conectado:
+            return False
+        try:
+            # Crear colección si no existe
+            if "tokens_firma" not in self.db.list_collection_names():
+                self.db.create_collection("tokens_firma")
+                self.db.tokens_firma.create_index("token", unique=True)
+                self.db.tokens_firma.create_index("expiracion")
+            
+            doc = {
+                "token": token,
+                "usuario_email": usuario_email,
+                "archivo_id": archivo_id,
+                "permisos": permisos,
+                "expiracion": expiracion,
+                "solicitante_id": solicitante_id,
+                "usado": False,
+                "fecha_creacion": datetime.utcnow()
+            }
+            self.db.tokens_firma.insert_one(doc)
+            return True
+        except Exception as e:
+            print(f"[DB ERROR] guardar_token_autorizacion: {e}")
+            return False
+
+    def obtener_token_autorizacion(self, token: str) -> dict | None:
+        """Obtiene información de un token de autorización."""
+        if not self.conectado:
+            return None
+        try:
+            doc = self.db.tokens_firma.find_one({"token": token})
+            if not doc:
+                return None
+            return {
+                "token": doc["token"],
+                "usuario_email": doc["usuario_email"],
+                "archivo_id": doc["archivo_id"],
+                "permisos": doc.get("permisos", []),
+                "expiracion": doc["expiracion"],
+                "solicitante_id": doc.get("solicitante_id"),
+                "usado": doc.get("usado", False),
+                "fecha_creacion": doc.get("fecha_creacion")
+            }
+        except Exception as e:
+            print(f"[DB ERROR] obtener_token_autorizacion: {e}")
+            return None
+
+    def marcar_token_usado(self, token: str) -> bool:
+        """Marca un token como usado."""
+        if not self.conectado:
+            return False
+        try:
+            res = self.db.tokens_firma.update_one(
+                {"token": token},
+                {"$set": {"usado": True, "fecha_uso": datetime.utcnow()}}
+            )
+            return res.modified_count > 0
+        except Exception as e:
+            print(f"[DB ERROR] marcar_token_usado: {e}")
+            return False
+
+    def limpiar_tokens_expirados(self) -> int:
+        """Elimina tokens expirados. Devuelve cantidad eliminada."""
+        if not self.conectado:
+            return 0
+        try:
+            res = self.db.tokens_firma.delete_many({"expiracion": {"$lt": datetime.utcnow()}})
+            return res.deleted_count
+        except Exception as e:
+            print(f"[DB ERROR] limpiar_tokens_expirados: {e}")
+            return 0
+
+    # -------------------------------
     # CERRAR
     # -------------------------------
     def cerrar(self):
         if self.client:
             self.client.close()
-            print("✓ Conexión MongoDB cerrada")
+            print("[+] Conexion MongoDB cerrada")
 
 
 # instancia global

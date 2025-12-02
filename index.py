@@ -10,12 +10,19 @@ def get_google():
 
 @rutas.get("/login")
 def login_page():
-    return render_template("login.html")
+    # Capturar URL de redirección y mensaje
+    next_url = request.args.get('next', '')
+    msg = request.args.get('msg', '')
+    return render_template("login.html", next_url=next_url, login_msg=msg)
 
 @rutas.route('/login_google')
 def login_google():
     google = get_google()
     redirect_uri = url_for('rutas.auth', _external=True)
+    # Guardar URL de redirección para después del auth
+    next_url = request.args.get('next', '')
+    if next_url:
+        session['login_next'] = next_url
     return google.authorize_redirect(redirect_uri, prompt="select_account")
 
 @rutas.post("/register")
@@ -33,6 +40,15 @@ def register():
     user_id = db_manager.crear_usuario_classico(nombre, apellido, email, password, ip)
     if not user_id:
         return jsonify({"error": "Email ya registrado"}), 409
+
+    # Guardar sesion del usuario registrado
+    session['user'] = {
+        '_id': user_id,
+        'google_id': None,
+        'email': email,
+        'name': nombre,
+        'picture': None
+    }
 
     return jsonify({"user_id": user_id}), 201
 
@@ -55,6 +71,12 @@ def auth():
     }
     # Guardar token si quieres mostrarlo (solo para pruebas locales)
     session['token'] = token
+    
+    # Redirigir a URL guardada o al chat
+    next_url = session.pop('login_next', None)
+    if next_url:
+        from urllib.parse import unquote
+        return redirect(unquote(next_url))
     return redirect("/chat")
 
 @rutas.post("/login")
@@ -70,6 +92,17 @@ def login():
     user_id = db_manager.login_usuario_classico(email, password, ip)
     if not user_id:
         return jsonify({"error": "Email o contraseña incorrectos"}), 401
+
+    # Obtener datos del usuario para la sesion
+    usuario = db_manager.obtener_estadisticas_usuario(user_id)
+    if usuario:
+        session['user'] = {
+            '_id': user_id,
+            'google_id': None,
+            'email': email,
+            'name': usuario.get('nombre', email),
+            'picture': usuario.get('picture')
+        }
 
     return jsonify({"user_id": user_id})
 

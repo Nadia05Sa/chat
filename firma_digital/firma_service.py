@@ -64,7 +64,7 @@ class FirmaDigitalService:
                         password=None,
                         backend=default_backend()
                     )
-                print(f"✓ Clave privada cargada: {self.key_path}")
+                print(f"[+] Clave privada cargada: {self.key_path}")
             
             if os.path.exists(self.cert_path):
                 with open(self.cert_path, "rb") as f:
@@ -72,10 +72,10 @@ class FirmaDigitalService:
                         f.read(),
                         backend=default_backend()
                     )
-                print(f"✓ Certificado cargado: {self.cert_path}")
+                print(f"[+] Certificado cargado: {self.cert_path}")
                 
         except Exception as e:
-            print(f"⚠️ Error cargando credenciales de firma: {e}")
+            print(f"[!] Error cargando credenciales de firma: {e}")
             print("   Ejecuta 'python -m firma_digital.generar_certificado_firma' para crear uno nuevo")
     
     def generar_certificado_firma(
@@ -147,8 +147,8 @@ class FirmaDigitalService:
         self._private_key = private_key
         self._certificate = cert
         
-        print(f"✓ Certificado de firma generado: {self.cert_path}")
-        print(f"✓ Clave privada generada: {self.key_path}")
+        print(f"[+] Certificado de firma generado: {self.cert_path}")
+        print(f"[+] Clave privada generada: {self.key_path}")
         
         return (self.cert_path, self.key_path)
     
@@ -396,4 +396,5 @@ class FirmaDigitalService:
 
 # Importación necesaria al inicio (evitar circular)
 from datetime import timedelta
+
 

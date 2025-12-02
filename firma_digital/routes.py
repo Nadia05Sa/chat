@@ -237,6 +237,103 @@ def descargar_archivo(archivo_id):
     return send_file(archivo_path, as_attachment=True)
 
 
+@firma_bp.route('/previsualizar/<archivo_id>')
+def previsualizar_archivo(archivo_id):
+    """
+    Previsualiza un archivo pendiente de firma.
+    Requiere autenticación y permiso de lectura (via token o ser el propietario).
+    """
+    usuario = obtener_usuario_actual()
+    token = request.args.get('token') or session.get('firma_token')
+    
+    # Verificar autenticación
+    if not usuario and not token:
+        return jsonify({'error': 'No autenticado'}), 401
+    
+    # Si hay token, verificar que tenga permiso de lectura
+    if token:
+        email_service = get_email_service()
+        validacion = email_service.validar_token(token)
+        
+        if not validacion.get('valido'):
+            return jsonify({'error': 'Token inválido o expirado'}), 401
+        
+        if 'lectura' not in validacion.get('permisos', []):
+            return jsonify({'error': 'No tienes permiso para ver este documento'}), 403
+        
+        # Verificar que el archivo del token coincida
+        if validacion.get('archivo_id') != archivo_id:
+            return jsonify({'error': 'No tienes acceso a este documento'}), 403
+        
+        # Verificar que el usuario logueado sea el autorizado
+        if usuario:
+            email_autorizado = validacion.get('usuario_email', '').lower()
+            email_usuario = usuario.get('email', '').lower()
+            if email_usuario != email_autorizado:
+                return jsonify({'error': 'No tienes acceso a este documento'}), 403
+    
+    # Buscar archivo en pendientes
+    archivo_path = os.path.join(UPLOAD_FOLDER, 'pendientes', archivo_id)
+    
+    if not os.path.exists(archivo_path):
+        return jsonify({'error': 'Archivo no encontrado'}), 404
+    
+    # Determinar el tipo MIME
+    extension = os.path.splitext(archivo_id)[1].lower()
+    mime_types = {
+        '.pdf': 'application/pdf',
+        '.txt': 'text/plain',
+        '.zip': 'application/zip'
+    }
+    mimetype = mime_types.get(extension, 'application/octet-stream')
+    
+    # Para PDF y TXT, mostrar en el navegador; para ZIP, descargar
+    if extension in ['.pdf', '.txt']:
+        return send_file(archivo_path, mimetype=mimetype, as_attachment=False)
+    else:
+        return send_file(archivo_path, as_attachment=True)
+
+
+@firma_bp.route('/info-archivo/<archivo_id>')
+def info_archivo(archivo_id):
+    """
+    Obtiene información de un archivo pendiente.
+    Requiere autenticación.
+    """
+    usuario = obtener_usuario_actual()
+    token = request.args.get('token') or session.get('firma_token')
+    
+    if not usuario and not token:
+        return jsonify({'error': 'No autenticado'}), 401
+    
+    # Verificar token si existe
+    if token:
+        email_service = get_email_service()
+        validacion = email_service.validar_token(token)
+        
+        if not validacion.get('valido'):
+            return jsonify({'error': 'Token inválido'}), 401
+        
+        if validacion.get('archivo_id') != archivo_id:
+            return jsonify({'error': 'No tienes acceso a este documento'}), 403
+    
+    archivo_path = os.path.join(UPLOAD_FOLDER, 'pendientes', archivo_id)
+    
+    if not os.path.exists(archivo_path):
+        return jsonify({'error': 'Archivo no encontrado'}), 404
+    
+    stat = os.stat(archivo_path)
+    extension = os.path.splitext(archivo_id)[1].lower()
+    
+    return jsonify({
+        'nombre': archivo_id,
+        'tamaño': stat.st_size,
+        'extension': extension,
+        'puede_previsualizar': extension in ['.pdf', '.txt'],
+        'fecha_subida': datetime.fromtimestamp(stat.st_mtime).isoformat()
+    })
+
+
 # ============================================
 # ENDPOINTS DE AUTORIZACIÓN
 # ============================================
@@ -245,10 +342,11 @@ def descargar_archivo(archivo_id):
 def solicitar_autorizacion():
     """
     Envía una solicitud de autorización por email.
+    Solo permite enviar a usuarios registrados en el sistema.
     
     Request JSON:
         - archivo_id: ID del archivo
-        - email_autorizado: Email de quien puede firmar
+        - email_autorizado: Email de quien puede firmar (debe ser usuario registrado)
         - nombre_autorizado: Nombre del autorizado
         - mensaje: Mensaje adicional (opcional)
         
@@ -275,12 +373,26 @@ def solicitar_autorizacion():
     
     try:
         email_service = get_email_service()
+        
+        # VALIDACIÓN: Verificar que el email pertenece a un usuario registrado
+        verificacion = email_service.verificar_usuario_registrado(email_autorizado)
+        if not verificacion.get('existe'):
+            return jsonify({
+                'error': 'El destinatario no está registrado en el sistema. Solo puedes enviar autorizaciones a usuarios del chat.'
+            }), 400
+        
+        # Usar el nombre del usuario registrado si no se proporcionó
+        usuario_destino = verificacion.get('usuario', {})
+        if not nombre_autorizado or nombre_autorizado == email_autorizado:
+            nombre_autorizado = usuario_destino.get('nombre', email_autorizado)
+        
         resultado = email_service.enviar_autorizacion_firma(
             destinatario_email=email_autorizado,
             destinatario_nombre=nombre_autorizado,
             archivo_nombre=archivo_id,
             archivo_id=archivo_id,
             solicitante_nombre=usuario.get('name'),
+            solicitante_id=usuario.get('_id'),
             mensaje_adicional=mensaje
         )
         
@@ -294,6 +406,7 @@ def solicitar_autorizacion():
 def autorizar_firma():
     """
     Página de autorización de firma (desde el email).
+    Requiere que el usuario esté autenticado y que su email coincida con el autorizado.
     
     Query params:
         - token: Token de autorización
@@ -309,24 +422,53 @@ def autorizar_firma():
     if not validacion.get('valido'):
         return render_template('denied.html', mensaje=validacion.get('error', 'Token inválido'))
     
+    # Verificar que el usuario esté autenticado
+    usuario = obtener_usuario_actual()
+    if not usuario:
+        # Redirigir a login con return URL
+        from urllib.parse import quote
+        return_url = quote(request.url, safe='')
+        return redirect(f'/login?next={return_url}&msg=Debes iniciar sesión para firmar el documento')
+    
+    # Verificar que el email del usuario logueado coincida con el autorizado
+    email_autorizado = validacion.get('usuario_email', '').lower()
+    email_usuario = usuario.get('email', '').lower()
+    
+    if email_usuario != email_autorizado:
+        return render_template('denied.html', 
+                              mensaje=f"Este documento fue autorizado para {email_autorizado}. Debes iniciar sesión con esa cuenta.")
+    
     # Guardar token en sesión para uso posterior
     session['firma_token'] = token
     session['firma_archivo_id'] = validacion.get('archivo_id')
+    session['firma_usuario_email'] = email_autorizado
+    
+    # Obtener información del usuario autorizado
+    usuario_info = validacion.get('usuario_info', {})
     
     return render_template('firma_autorizada.html', 
                           archivo_id=validacion.get('archivo_id'),
-                          permisos=validacion.get('permisos'))
+                          permisos=validacion.get('permisos'),
+                          usuario_nombre=usuario_info.get('nombre', usuario.get('name')),
+                          usuario_email=email_autorizado,
+                          puede_previsualizar='lectura' in validacion.get('permisos', []))
 
 
 @firma_bp.route('/ejecutar-firma-autorizada', methods=['POST'])
 def ejecutar_firma_autorizada():
     """
     Ejecuta la firma con un token de autorización.
+    Requiere autenticación y que el email coincida con el autorizado.
     
     Request JSON:
         - token: Token de autorización
         - razon: Razón de la firma
     """
+    # Verificar autenticación
+    usuario = obtener_usuario_actual()
+    if not usuario:
+        return jsonify({'error': 'Debes iniciar sesión para firmar'}), 401
+    
     data = request.json or {}
     token = data.get('token') or session.get('firma_token')
     razon = data.get('razon', 'Firma digital autorizada')
@@ -340,6 +482,15 @@ def ejecutar_firma_autorizada():
     if not validacion.get('valido'):
         return jsonify({'error': validacion.get('error')}), 401
     
+    # Verificar que el email del usuario logueado coincida con el autorizado
+    email_autorizado = validacion.get('usuario_email', '').lower()
+    email_usuario = usuario.get('email', '').lower()
+    
+    if email_usuario != email_autorizado:
+        return jsonify({
+            'error': f'Este documento fue autorizado para {email_autorizado}. Debes usar esa cuenta.'
+        }), 403
+    
     if 'firma' not in validacion.get('permisos', []):
         return jsonify({'error': 'No tienes permiso para firmar'}), 403
     
@@ -349,25 +500,36 @@ def ejecutar_firma_autorizada():
     if not os.path.exists(archivo_path):
         return jsonify({'error': 'Archivo no encontrado'}), 404
     
+    # Obtener información correcta del firmante
+    usuario_info = validacion.get('usuario_info', {})
+    firmante_id = usuario_info.get('_id') or usuario.get('_id')
+    firmante_nombre = usuario_info.get('nombre') or usuario.get('name')
+    firmante_email = email_autorizado
+    
     try:
         resultado = firma_service.firmar_archivo(
             archivo_path=archivo_path,
-            firmante_id=validacion.get('usuario_id'),
-            firmante_nombre=validacion.get('usuario_id'),
-            firmante_email=validacion.get('usuario_id'),
+            firmante_id=firmante_id,
+            firmante_nombre=firmante_nombre,
+            firmante_email=firmante_email,
             razon=razon
         )
         
         # Marcar token como usado
         email_service.marcar_token_usado(token)
         
+        # Limpiar sesión de firma
+        session.pop('firma_token', None)
+        session.pop('firma_archivo_id', None)
+        session.pop('firma_usuario_email', None)
+        
         # Eliminar de pendientes
         os.remove(archivo_path)
         
-        # Enviar confirmación
+        # Enviar confirmación al firmante
         email_service.enviar_confirmacion_firma(
-            destinatario_email=validacion.get('usuario_id'),
-            destinatario_nombre=validacion.get('usuario_id'),
+            destinatario_email=firmante_email,
+            destinatario_nombre=firmante_nombre,
             archivo_nombre=archivo_id,
             hash_documento=resultado.get('hash')
         )
@@ -502,4 +664,7 @@ def info_certificado():
         })
     else:
         return jsonify({'error': 'No hay certificado configurado'}), 404
+
+
+
 

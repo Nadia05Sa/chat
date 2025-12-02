@@ -14,7 +14,7 @@ def _crear_contexto_ssl():
     """
     if not os.path.exists(SSL_CERT_PATH):
         raise FileNotFoundError(
-            f"❌ ERROR: Certificado SSL no encontrado en: {SSL_CERT_PATH}\n"
+            f"[ERROR] Certificado SSL no encontrado en: {SSL_CERT_PATH}\n"
             "Genera certificados autofirmados con:\n"
             "  mkdir certs\n"
             '  openssl req -x509 -newkey rsa:4096 -keyout certs/key.pem -out certs/cert.pem -days 365 -nodes -subj "/CN=localhost"'
@@ -22,7 +22,7 @@ def _crear_contexto_ssl():
     
     if not os.path.exists(SSL_KEY_PATH):
         raise FileNotFoundError(
-            f"❌ ERROR: Clave privada SSL no encontrada en: {SSL_KEY_PATH}"
+            f"[ERROR] Clave privada SSL no encontrada en: {SSL_KEY_PATH}"
         )
     
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -42,7 +42,7 @@ async def iniciar_ws():
     if SSL_ENABLED:
         ssl_context = _crear_contexto_ssl()
         protocolo = "wss"
-        print(f"[WS] 🔒 SSL/TLS habilitado")
+        print(f"[WS] [+] SSL/TLS habilitado")
         print(f"[WS] Certificado: {SSL_CERT_PATH}")
         print(f"[WS] Iniciando en {protocolo}://{IP_SERVIDOR}:{PUERTO}")
         
@@ -54,7 +54,7 @@ async def iniciar_ws():
         )
     else:
         protocolo = "ws"
-        print(f"[WS] ⚠️  SSL/TLS deshabilitado (no recomendado para producción)")
+        print(f"[WS] [!] SSL/TLS deshabilitado (no recomendado para produccion)")
         print(f"[WS] Iniciando en {protocolo}://{IP_SERVIDOR}:{PUERTO}")
         
         server = await websockets.serve(

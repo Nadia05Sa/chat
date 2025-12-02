@@ -190,8 +190,12 @@
       
       <h1>Acceso Denegado</h1>
       <p class="message">
-        No tienes autorización para acceder a esta página.<br>
-        Por favor, inicia sesión para continuar.
+        {% if mensaje %}
+          {{ mensaje }}
+        {% else %}
+          No tienes autorización para acceder a esta página.<br>
+          Por favor, inicia sesión para continuar.
+        {% endif %}
       </p>
 
       <div class="info-box">
@@ -200,6 +204,7 @@
           <li>Tu sesión ha expirado</li>
           <li>No has iniciado sesión</li>
           <li>No tienes los permisos necesarios</li>
+          <li>El enlace es inválido o ha expirado</li>
         </ul>
       </div>
 

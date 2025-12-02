@@ -26,13 +26,13 @@ def _get_aes_key():
     key_base64 = os.environ.get("AES_KEY_BASE64")
     if not key_base64:
         raise ValueError(
-            "❌ ERROR: AES_KEY_BASE64 no está configurada en las variables de ambiente.\n"
+            "[ERROR] AES_KEY_BASE64 no esta configurada en las variables de ambiente.\n"
             "Genera una clave con: python -c \"import secrets, base64; print(base64.b64encode(secrets.token_bytes(32)).decode())\""
         )
     
     key_bytes = base64.b64decode(key_base64)
     if len(key_bytes) != 32:
-        raise ValueError(f"❌ ERROR: AES_KEY debe ser de 32 bytes, se recibieron {len(key_bytes)} bytes")
+        raise ValueError(f"[ERROR] AES_KEY debe ser de 32 bytes, se recibieron {len(key_bytes)} bytes")
     
     return key_bytes
 
@@ -43,7 +43,7 @@ def _get_hmac_key():
     key = os.environ.get("HMAC_SECRET_KEY")
     if not key:
         raise ValueError(
-            "❌ ERROR: HMAC_SECRET_KEY no está configurada en las variables de ambiente."
+            "[ERROR] HMAC_SECRET_KEY no esta configurada en las variables de ambiente."
         )
     return key.encode('utf-8')
 
@@ -56,7 +56,7 @@ CLAVE_SECRETA = _get_hmac_key()
 # ----------------------------------
 MONGO_URI = os.environ.get("MONGO_URI")
 if not MONGO_URI:
-    raise ValueError("❌ ERROR: MONGO_URI no está configurada en las variables de ambiente.")
+    raise ValueError("[ERROR] MONGO_URI no esta configurada en las variables de ambiente.")
 
 DB_NAME = os.environ.get("DB_NAME", "chat-cybersecurity")
 ENABLE_DB = os.environ.get("ENABLE_DB", "true").lower() == "true"

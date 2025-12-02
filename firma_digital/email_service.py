@@ -13,8 +13,13 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 import secrets
+
+# Importar db_manager para persistencia de tokens
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from db_manager import db_manager
 
 
 class EmailService:
@@ -54,9 +59,6 @@ class EmailService:
         
         self.sender_name = os.environ.get("EMAIL_SENDER_NAME", "Sistema de Firma Digital")
         self.base_url = os.environ.get("APP_BASE_URL", "http://localhost:5000")
-        
-        # Almacén de tokens de autorización (en producción usar Redis/DB)
-        self._tokens_autorizacion = {}
     
     def _crear_conexion(self):
         """Crea conexión SMTP."""
@@ -144,7 +146,7 @@ class EmailService:
             server.sendmail(self.smtp_user, todos_destinatarios, msg.as_string())
             server.quit()
             
-            print(f"✓ Email enviado a: {destinatario}")
+            print(f"[+] Email enviado a: {destinatario}")
             
             return {
                 'exito': True,
@@ -154,50 +156,74 @@ class EmailService:
             }
             
         except Exception as e:
-            print(f"✗ Error enviando email: {e}")
+            print(f"[x] Error enviando email: {e}")
             return {
                 'exito': False,
                 'error': str(e),
                 'destinatario': destinatario
             }
     
-    def generar_token_autorizacion(
-        self,
-        usuario_id: str,
-        archivo_id: str,
-        permisos: List[str] = None,
-        expiracion_horas: int = 24
-    ) -> str:
+    def verificar_usuario_registrado(self, email: str) -> Dict[str, Any]:
         """
-        Genera un token de autorización para firma.
+        Verifica si un email corresponde a un usuario registrado en el sistema.
         
         Args:
-            usuario_id: ID del usuario autorizado
+            email: Email a verificar
+            
+        Returns:
+            Diccionario con información del usuario o error
+        """
+        usuario = db_manager.obtener_usuario_por_email(email)
+        if not usuario:
+            return {'existe': False, 'error': 'El usuario no está registrado en el sistema'}
+        
+        return {
+            'existe': True,
+            'usuario': usuario
+        }
+
+    def generar_token_autorizacion(
+        self,
+        usuario_email: str,
+        archivo_id: str,
+        permisos: List[str] = None,
+        expiracion_horas: int = 24,
+        solicitante_id: str = None
+    ) -> str:
+        """
+        Genera un token de autorización para firma y lo guarda en MongoDB.
+        
+        Args:
+            usuario_email: Email del usuario autorizado
             archivo_id: ID del archivo a firmar
             permisos: Lista de permisos ['firma', 'lectura', 'descarga']
             expiracion_horas: Horas hasta expiración
+            solicitante_id: ID del usuario que solicita la autorización
             
         Returns:
-            Token de autorización
+            Token de autorización o None si hay error
         """
         token = secrets.token_urlsafe(32)
-        
-        from datetime import timedelta
         expiracion = datetime.utcnow() + timedelta(hours=expiracion_horas)
         
-        self._tokens_autorizacion[token] = {
-            'usuario_id': usuario_id,
-            'archivo_id': archivo_id,
-            'permisos': permisos or ['firma'],
-            'expiracion': expiracion.isoformat(),
-            'usado': False
-        }
+        # Guardar en MongoDB
+        exito = db_manager.guardar_token_autorizacion(
+            token=token,
+            usuario_email=usuario_email,
+            archivo_id=archivo_id,
+            permisos=permisos or ['firma', 'lectura'],
+            expiracion=expiracion,
+            solicitante_id=solicitante_id or ''
+        )
+        
+        if not exito:
+            return None
         
         return token
     
     def validar_token(self, token: str) -> Dict[str, Any]:
         """
-        Valida un token de autorización.
+        Valida un token de autorización desde MongoDB.
         
         Args:
             token: Token a validar
@@ -205,29 +231,32 @@ class EmailService:
         Returns:
             Información del token si es válido
         """
-        if token not in self._tokens_autorizacion:
-            return {'valido': False, 'error': 'Token no encontrado'}
+        info = db_manager.obtener_token_autorizacion(token)
         
-        info = self._tokens_autorizacion[token]
+        if not info:
+            return {'valido': False, 'error': 'Token no encontrado'}
         
         if info['usado']:
             return {'valido': False, 'error': 'Token ya fue utilizado'}
         
-        expiracion = datetime.fromisoformat(info['expiracion'])
-        if datetime.utcnow() > expiracion:
+        if datetime.utcnow() > info['expiracion']:
             return {'valido': False, 'error': 'Token expirado'}
+        
+        # Obtener información del usuario autorizado
+        usuario = db_manager.obtener_usuario_por_email(info['usuario_email'])
         
         return {
             'valido': True,
-            'usuario_id': info['usuario_id'],
+            'usuario_email': info['usuario_email'],
+            'usuario_info': usuario,
             'archivo_id': info['archivo_id'],
-            'permisos': info['permisos']
+            'permisos': info['permisos'],
+            'solicitante_id': info.get('solicitante_id')
         }
     
-    def marcar_token_usado(self, token: str):
-        """Marca un token como utilizado."""
-        if token in self._tokens_autorizacion:
-            self._tokens_autorizacion[token]['usado'] = True
+    def marcar_token_usado(self, token: str) -> bool:
+        """Marca un token como utilizado en MongoDB."""
+        return db_manager.marcar_token_usado(token)
     
     def enviar_autorizacion_firma(
         self,
@@ -236,28 +265,38 @@ class EmailService:
         archivo_nombre: str,
         archivo_id: str,
         solicitante_nombre: str,
+        solicitante_id: str = None,
         mensaje_adicional: str = None
     ) -> Dict[str, Any]:
         """
         Envía un correo de autorización para firmar un documento.
+        Solo a usuarios registrados en el sistema.
         
         Args:
-            destinatario_email: Email del autorizado
+            destinatario_email: Email del autorizado (debe ser usuario registrado)
             destinatario_nombre: Nombre del autorizado
             archivo_nombre: Nombre del archivo
             archivo_id: ID del archivo
             solicitante_nombre: Nombre de quien solicita
+            solicitante_id: ID del usuario solicitante
             mensaje_adicional: Mensaje extra
             
         Returns:
             Resultado del envío con token
         """
-        # Generar token
+        # Generar token con persistencia en MongoDB
         token = self.generar_token_autorizacion(
-            usuario_id=destinatario_email,
+            usuario_email=destinatario_email,
             archivo_id=archivo_id,
-            permisos=['firma', 'lectura']
+            permisos=['firma', 'lectura'],
+            solicitante_id=solicitante_id
         )
+        
+        if not token:
+            return {
+                'exito': False,
+                'error': 'No se pudo generar el token de autorización'
+            }
         
         # URL de autorización
         url_firma = f"{self.base_url}/firma/autorizar?token={token}"
@@ -512,4 +551,5 @@ def get_email_service() -> EmailService:
     if _email_service is None:
         _email_service = EmailService()
     return _email_service
+
 

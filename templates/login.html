@@ -214,6 +214,12 @@
         color: var(--active-color);
       }
 
+      .alert-info {
+        background: rgba(33, 46, 142, 0.15);
+        border: 1px solid var(--primario);
+        color: var(--primario);
+      }
+
       #form-register {
         display: none;
       }
@@ -270,7 +276,7 @@
 
         <div class="divider"><span>o continúa con</span></div>
 
-        <button class="btn btn-google" onclick="window.location.href = '/login_google'">
+        <button class="btn btn-google" id="btn-google">
           <img src="https://www.google.com/favicon.ico" alt="Google">
           Acceder con Google
         </button>
@@ -314,15 +320,26 @@
       const regForm = document.getElementById("form-register");
       const title = document.getElementById("title");
       const alertContainer = document.getElementById("alert-container");
+      
+      // URL de redirección después del login (pasada desde el servidor)
+      const nextUrl = '{{ next_url | default("", true) }}';
+      const loginMsg = '{{ login_msg | default("", true) }}';
 
       function showAlert(type, message) {
         alertContainer.innerHTML = `
           <div class="alert alert-${type}">
-            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'info' ? 'info-circle' : 'check-circle'}"></i>
             ${message}
           </div>
         `;
-        setTimeout(() => alertContainer.innerHTML = '', 5000);
+        if (type !== 'info') {
+          setTimeout(() => alertContainer.innerHTML = '', 5000);
+        }
+      }
+
+      // Mostrar mensaje si viene del servidor
+      if (loginMsg) {
+        showAlert('info', loginMsg);
       }
 
       // Cambiar de login a registro
@@ -338,6 +355,15 @@
         regForm.style.display = "none";
         title.innerText = "Iniciar Sesión";
         alertContainer.innerHTML = '';
+      });
+
+      // Redirigir a Google con URL de retorno
+      document.getElementById("btn-google").addEventListener("click", () => {
+        let googleUrl = '/login_google';
+        if (nextUrl) {
+          googleUrl += '?next=' + encodeURIComponent(nextUrl);
+        }
+        window.location.href = googleUrl;
       });
 
       // POST /register
@@ -368,7 +394,8 @@
           sessionStorage.setItem("user_id", data.user_id);
           
           setTimeout(() => {
-            window.location.href = "/chat";
+            // Redirigir a la URL de retorno o al chat
+            window.location.href = nextUrl ? decodeURIComponent(nextUrl) : "/chat";
           }, 1000);
         } catch (err) {
           showAlert('error', "Error en el registro: " + err);
@@ -400,7 +427,8 @@
           sessionStorage.setItem("user_id", data.user_id);
           
           setTimeout(() => {
-            window.location.href = "/chat";
+            // Redirigir a la URL de retorno o al chat
+            window.location.href = nextUrl ? decodeURIComponent(nextUrl) : "/chat";
           }, 1000);
         } catch (err) {
           showAlert('error', "Error en login: " + err);

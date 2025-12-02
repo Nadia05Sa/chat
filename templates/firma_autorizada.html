@@ -29,7 +29,7 @@
         background: var(--surface);
         border-radius: 16px;
         padding: 2.5rem;
-        max-width: 480px;
+        max-width: 520px;
         width: 100%;
         text-align: center;
         box-shadow: 0px 4px 20px var(--primario-sombra);
@@ -62,6 +62,47 @@
         opacity: 0.7;
         margin-bottom: 2rem;
         font-size: 0.95rem;
+      }
+
+      .user-info {
+        background: linear-gradient(135deg, rgba(33, 46, 142, 0.1) 0%, rgba(33, 46, 142, 0.05) 100%);
+        border: 1px solid var(--primario);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .user-avatar {
+        width: 50px;
+        height: 50px;
+        background: var(--primario);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+
+      .user-details {
+        text-align: left;
+        flex: 1;
+      }
+
+      .user-details .name {
+        font-weight: 600;
+        color: var(--primario);
+        font-size: 1rem;
+      }
+
+      .user-details .email {
+        color: var(--surface-text);
+        opacity: 0.7;
+        font-size: 0.85rem;
       }
 
       .info-box {
@@ -104,6 +145,61 @@
         font-size: 0.85rem;
         color: var(--primario);
         font-weight: 500;
+      }
+
+      .preview-section {
+        margin-bottom: 1.5rem;
+      }
+
+      .btn-preview {
+        background: linear-gradient(135deg, var(--secundario) 0%, #b3481b 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+        font-weight: 500;
+      }
+
+      .btn-preview:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(232, 131, 58, 0.4);
+      }
+
+      .preview-container {
+        margin-top: 1rem;
+        border: 2px solid var(--primario-sombra);
+        border-radius: 12px;
+        overflow: hidden;
+        display: none;
+      }
+
+      .preview-container.active {
+        display: block;
+      }
+
+      .preview-container iframe {
+        width: 100%;
+        height: 400px;
+        border: none;
+      }
+
+      .preview-container .txt-preview {
+        background: var(--back);
+        padding: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+        text-align: left;
+        font-family: monospace;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+        color: var(--back-text);
       }
 
       .form-group {
@@ -263,9 +359,53 @@
       .warning-box li {
         margin: 0.3rem 0;
       }
+
+      .actions-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .actions-row .btn {
+        flex: 1;
+      }
+
+      .btn-secondary {
+        background: var(--back);
+        color: var(--primario);
+        border: 2px solid var(--primario);
+      }
+
+      .btn-secondary:hover {
+        background: var(--primario);
+        color: white;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--surface);
+        border: none;
+        padding: 0.75rem;
+        border-radius: 50%;
+        cursor: pointer;
+        color: var(--primario);
+        box-shadow: 0 2px 10px var(--primario-sombra);
+        transition: all 0.3s;
+        z-index: 100;
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+      }
     </style>
   </head>
   <body>
+    <button class="theme-toggle" onclick="document.body.classList.toggle('dark')">
+      <i class="fas fa-moon"></i>
+    </button>
+
     <div class="auth-container">
       <div class="auth-icon">
         <i class="fas fa-pen-nib"></i>
@@ -273,6 +413,17 @@
       
       <h1>Autorización de Firma</h1>
       <p class="subtitle">Has sido autorizado para firmar el siguiente documento</p>
+
+      <!-- Información del usuario autorizado -->
+      <div class="user-info">
+        <div class="user-avatar">
+          {{ usuario_nombre[0]|upper if usuario_nombre else 'U' }}
+        </div>
+        <div class="user-details">
+          <div class="name">{{ usuario_nombre or 'Usuario' }}</div>
+          <div class="email"><i class="fas fa-envelope"></i> {{ usuario_email }}</div>
+        </div>
+      </div>
 
       <div class="info-box">
         <p><i class="fas fa-file-alt"></i> <strong>Documento:</strong> {{ archivo_id }}</p>
@@ -285,12 +436,25 @@
         {% endfor %}
       </div>
 
+      <!-- Sección de previsualización -->
+      {% if puede_previsualizar %}
+      <div class="preview-section">
+        <button class="btn-preview" id="btn-preview">
+          <i class="fas fa-eye"></i> Ver documento antes de firmar
+        </button>
+        <div class="preview-container" id="preview-container">
+          <!-- El contenido se cargará dinámicamente -->
+        </div>
+      </div>
+      {% endif %}
+
       <div class="warning-box">
         <strong><i class="fas fa-exclamation-triangle"></i> Importante</strong>
         <ul>
           <li>Este enlace es de un solo uso</li>
           <li>Expira en 24 horas</li>
           <li>No compartas este enlace</li>
+          <li>Revisa el documento antes de firmar</li>
         </ul>
       </div>
 
@@ -299,21 +463,92 @@
         <textarea id="razon" rows="3" placeholder="Ej: Aprobación del documento..."></textarea>
       </div>
 
-      <button class="btn btn-success" id="btn-firmar">
-        <i class="fas fa-signature"></i> Firmar Documento
-      </button>
+      <div class="actions-row">
+        <a href="/chat" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Cancelar
+        </a>
+        <button class="btn btn-success" id="btn-firmar">
+          <i class="fas fa-signature"></i> Firmar Documento
+        </button>
+      </div>
 
       <div id="resultado" style="display: none;"></div>
 
       <div class="footer">
         <p>Sistema de Firma Digital - Chat Seguro</p>
+        <p><small>Sesión iniciada como: {{ usuario_email }}</small></p>
       </div>
     </div>
 
     <script>
       const btn = document.getElementById('btn-firmar');
       const resultadoDiv = document.getElementById('resultado');
+      const archivoId = '{{ archivo_id }}';
 
+      // Previsualización del documento
+      const btnPreview = document.getElementById('btn-preview');
+      const previewContainer = document.getElementById('preview-container');
+
+      if (btnPreview) {
+        btnPreview.addEventListener('click', async () => {
+          if (previewContainer.classList.contains('active')) {
+            previewContainer.classList.remove('active');
+            btnPreview.innerHTML = '<i class="fas fa-eye"></i> Ver documento antes de firmar';
+            return;
+          }
+
+          btnPreview.innerHTML = '<span class="loading"></span> Cargando...';
+          btnPreview.disabled = true;
+
+          try {
+            // Obtener info del archivo
+            const infoRes = await fetch(`/firma/info-archivo/${encodeURIComponent(archivoId)}`);
+            const info = await infoRes.json();
+
+            if (info.error) {
+              throw new Error(info.error);
+            }
+
+            if (info.extension === '.pdf') {
+              previewContainer.innerHTML = `
+                <iframe src="/firma/previsualizar/${encodeURIComponent(archivoId)}"></iframe>
+              `;
+            } else if (info.extension === '.txt') {
+              const txtRes = await fetch(`/firma/previsualizar/${encodeURIComponent(archivoId)}`);
+              const txtContent = await txtRes.text();
+              previewContainer.innerHTML = `
+                <div class="txt-preview">${txtContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+              `;
+            } else {
+              previewContainer.innerHTML = `
+                <div style="padding: 2rem; text-align: center;">
+                  <i class="fas fa-file-archive" style="font-size: 3rem; color: var(--secundario);"></i>
+                  <p style="margin-top: 1rem;">Este tipo de archivo no se puede previsualizar.</p>
+                  <a href="/firma/previsualizar/${encodeURIComponent(archivoId)}" class="btn-preview" style="margin-top: 1rem; text-decoration: none;">
+                    <i class="fas fa-download"></i> Descargar para revisar
+                  </a>
+                </div>
+              `;
+            }
+
+            previewContainer.classList.add('active');
+            btnPreview.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar documento';
+          } catch (err) {
+            previewContainer.innerHTML = `
+              <div style="padding: 2rem; text-align: center; color: var(--span-color);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                <p style="margin-top: 1rem;">Error al cargar el documento: ${err.message}</p>
+              </div>
+            `;
+            previewContainer.classList.add('active');
+            btnPreview.innerHTML = '<i class="fas fa-redo"></i> Reintentar';
+          }
+
+          btnPreview.disabled = false;
+        });
+      }
+
+      // Firma del documento
       btn.addEventListener('click', async () => {
         const razon = document.getElementById('razon').value;
 
@@ -341,10 +576,18 @@
               <p style="margin-top: 1rem;"><strong>Hash SHA-256:</strong></p>
               <div class="hash-box">${data.hash}</div>
               <p style="margin-top: 1rem; opacity: 0.7;">
-                <i class="fas fa-envelope"></i> Se ha enviado un correo de confirmación.
+                <i class="fas fa-envelope"></i> Se ha enviado un correo de confirmación a tu email.
               </p>
+              <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="/chat" class="btn btn-success" style="max-width: 200px;">
+                  <i class="fas fa-comments"></i> Ir al Chat
+                </a>
+              </div>
             `;
             btn.style.display = 'none';
+            document.querySelector('.actions-row').style.display = 'none';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (btnPreview) btnPreview.style.display = 'none';
           } else {
             resultadoDiv.className = 'resultado error';
             resultadoDiv.innerHTML = `

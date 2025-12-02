@@ -27,6 +27,7 @@ if __name__ == "__main__":
         asyncio.run(iniciar_ws())
     except KeyboardInterrupt:
         print("\n" + "=" * 50)
-        print("🛑 Servidor WebSocket detenido")
+        print("[x] Servidor WebSocket detenido")
         print("=" * 50)
+
 
